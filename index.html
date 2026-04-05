@@ -1,0 +1,2840 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0c14">
+<title>KTÜ Pediatri Sözlü Sınav</title>
+<style>
+  :root {
+    --bg: #080b14;
+    --surface: #0f1322;
+    --surface2: #161c30;
+    --border: #1f2845;
+    --text: #e4eaff;
+    --text2: #7b8fb0;
+    --accent: #4d8aff;
+    --accent2: #3570e8;
+    --accent-glow: rgba(77,138,255,0.2);
+    --red: #ff4560;
+    --orange: #ff7b2c;
+    --yellow: #ffcb30;
+    --green: #2de89a;
+    --green2: #1ac87e;
+    --purple: #b06fff;
+    --teal: #2dd8cc;
+    --nav-h: 64px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5; overflow: hidden; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 99px; opacity: 0.6; }
+
+  /* Layout */
+  #app { display: flex; flex-direction: column; height: 100dvh; height: 100vh; }
+
+  /* Header */
+  #header {
+    background: linear-gradient(135deg, #0d1535 0%, #0a0e20 100%);
+    border-bottom: 1px solid rgba(77,138,255,0.3);
+    box-shadow: 0 1px 16px rgba(0,0,0,0.5), 0 0 0 0 transparent;
+    padding: 12px 16px;
+    padding-top: calc(12px + var(--safe-top));
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; z-index: 10;
+    position: relative;
+  }
+  #header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(91,142,255,0.4), transparent);
+  }
+  #header-title { font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: -0.2px; }
+  #header .subtitle { font-size: 11px; color: rgba(136,150,176,0.85); margin-top: 1px; }
+
+  #main { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+
+  /* Bottom Nav */
+  #nav {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: calc(8px + var(--safe-bottom));
+    flex-shrink: 0; z-index: 10;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.35);
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 8px 4px; min-height: 56px; border: none; background: none; cursor: pointer;
+    color: var(--text2); font-size: 10px; gap: 3px; transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent; position: relative;
+  }
+  .nav-btn .nav-icon { font-size: 20px; transition: transform 0.2s; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn.active .nav-icon {
+    filter: drop-shadow(0 0 8px rgba(91,142,255,0.6));
+    transform: scale(1.1);
+  }
+  .nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%; transform: translateX(-50%);
+    width: 28px; height: 3px;
+    background: var(--accent);
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+
+  /* Pages */
+  .page { display: none; padding: 16px; padding-bottom: 24px; }
+  .page.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: #151929;
+    border: 1px solid #1e2340;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    transition: box-shadow 0.2s;
+  }
+  .card.open {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(91,142,255,0.12);
+  }
+  .card-header {
+    padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    user-select: none; min-height: 56px; transition: background 0.15s;
+  }
+  .card-header:hover { background: rgba(91,142,255,0.04); }
+  .card-header:active { background: #1a1f35; }
+  .card-title { flex: 1; font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--text); }
+  .card-badges { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .chevron {
+    font-size: 11px; color: var(--text2);
+    transition: transform 0.25s, color 0.2s; flex-shrink: 0;
+  }
+  .card.open .chevron { transform: rotate(180deg); color: var(--accent); }
+  .card-body { display: none; padding: 0 16px 16px; border-top: 1px solid #1e2340; }
+  .card.open .card-body { display: block; }
+
+  /* Card actions */
+  .card-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .btn-sm {
+    display: flex; align-items: center; gap: 5px; padding: 8px 14px;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.15s;
+    min-height: 36px; white-space: nowrap;
+  }
+  .btn-sm:active { transform: scale(0.96); }
+  .btn-bookmark.active {
+    background: rgba(251,191,36,0.12);
+    border-color: rgba(251,191,36,0.45);
+    color: var(--yellow);
+  }
+  .btn-learned.active {
+    background: rgba(52,211,153,0.12);
+    border-color: rgba(52,211,153,0.45);
+    color: var(--green);
+  }
+
+  /* Priority badges */
+  .badge {
+    font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 700;
+    white-space: nowrap; flex-shrink: 0; letter-spacing: 0.2px;
+  }
+  .badge-p4 {
+    background: rgba(244,63,94,0.18);
+    color: #ff6b87;
+    border: 1px solid rgba(244,63,94,0.4);
+    box-shadow: 0 0 8px rgba(244,63,94,0.25);
+  }
+  .badge-p3 {
+    background: rgba(251,146,60,0.18);
+    color: #fb923c;
+    border: 1px solid rgba(251,146,60,0.35);
+  }
+  .badge-p2 {
+    background: rgba(251,191,36,0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251,191,36,0.35);
+  }
+  .badge-p1 {
+    background: rgba(52,211,153,0.15);
+    color: #34d399;
+    border: 1px solid rgba(52,211,153,0.3);
+  }
+
+  /* Learned/bookmark indicators */
+  .learned-mark { color: var(--green); font-size: 14px; }
+  .bookmark-mark { color: var(--yellow); font-size: 14px; }
+
+  /* Category header */
+  .cat-header {
+    font-size: 12px; font-weight: 700; color: var(--text2);
+    padding: 20px 4px 8px; display: flex; align-items: center; gap: 8px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    border-left: 3px solid var(--accent);
+    padding-left: 10px; margin-left: 2px;
+  }
+  .cat-header:first-child { padding-top: 4px; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .stat-card:nth-child(1) {
+    background: linear-gradient(135deg, #151f3a 0%, #0f1525 100%);
+  }
+  .stat-card:nth-child(2) {
+    background: linear-gradient(135deg, #1e1a0a 0%, #130f04 100%);
+  }
+  .stat-card:nth-child(3) {
+    background: linear-gradient(135deg, #0a1e14 0%, #071510 100%);
+  }
+  .stat-card:nth-child(4) {
+    background: linear-gradient(135deg, #0d1e1d 0%, #07130e 100%);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  }
+  .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 4px; }
+  .progress-bar-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px; }
+  .progress-track { height: 8px; background: rgba(30,37,69,0.8); border-radius: 4px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--teal), var(--green));
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 8px rgba(91,142,255,0.3);
+  }
+
+  /* Filter chips */
+  .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0; padding: 6px 14px; border-radius: 24px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text2); font-size: 13px; cursor: pointer;
+    transition: all 0.18s; min-height: 34px; display: flex; align-items: center; white-space: nowrap;
+  }
+  .chip.active {
+    background: var(--accent2);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(91,142,255,0.35);
+  }
+  .chip:active { transform: scale(0.95); }
+
+  /* Content formatting */
+  .content { font-size: 14px; line-height: 1.75; color: var(--text); }
+  .content p { margin-bottom: 10px; }
+  .content ul { padding-left: 20px; margin-bottom: 10px; }
+  .content li { margin-bottom: 5px; }
+  .content strong { color: #ffffff; font-weight: 700; }
+  .content em { color: var(--yellow); font-style: normal; }
+
+  /* Tables */
+  .tbl-wrap {
+    overflow-x: auto; margin: 10px 0; -webkit-overflow-scrolling: touch;
+    border-radius: 10px; border: 1px solid var(--border);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 320px; }
+  th {
+    background: linear-gradient(135deg, #1a2040 0%, #141830 100%);
+    color: var(--text2); padding: 9px 10px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 8px 10px; border-bottom: 1px solid rgba(30,37,69,0.6); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(91,142,255,0.03); }
+
+  /* Dose grid */
+  .dose-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .dose-card {
+    background: linear-gradient(135deg, #151e35 0%, #10162a 100%);
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  }
+  .dose-card h4 {
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+    padding-bottom: 8px; border-bottom: 1px solid rgba(91,142,255,0.15);
+  }
+  .dose-item { display: flex; flex-direction: column; padding: 6px 0; border-bottom: 1px solid rgba(30,37,69,0.6); }
+  .dose-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .dose-name { font-size: 12px; color: var(--text2); }
+  .dose-val { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+  /* Search */
+  .search-wrap { position: relative; margin-bottom: 16px; }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text); font-size: 16px;
+    padding: 13px 16px 13px 46px;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(91,142,255,0.15);
+  }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--text2); pointer-events: none; }
+  .search-clear {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: rgba(30,37,69,0.8); border: 1px solid var(--border);
+    color: var(--text2); font-size: 14px; cursor: pointer; padding: 4px 8px;
+    border-radius: 8px; display: none;
+  }
+  .search-clear.visible { display: block; }
+
+  /* Highlight */
+  mark {
+    background: rgba(91,142,255,0.28);
+    color: #fff;
+    border-radius: 3px;
+    padding: 0 3px;
+    box-shadow: inset 0 0 0 1px rgba(91,142,255,0.2);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1e2540;
+    border: 1px solid rgba(91,142,255,0.25);
+    color: var(--text);
+    padding: 10px 22px; border-radius: 24px; font-size: 14px; z-index: 999;
+    opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap; pointer-events: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Section title */
+  .section-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 12px;
+    color: var(--text); display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* Toggle all btn */
+  .toggle-all-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; min-height: 36px;
+  }
+  .toggle-all-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-all-btn:active { transform: scale(0.96); }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .empty .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; }
+
+  /* Pearl box */
+  .pearl {
+    background: rgba(91,142,255,0.08);
+    border: 1px solid rgba(91,142,255,0.3);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin: 10px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .pearl::before { content: "💎 "; }
+
+  /* Warning box */
+  .warn {
+    background: rgba(244,63,94,0.08);
+    border: 1px solid rgba(244,63,94,0.3);
+    border-left: 3px solid var(--red);
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin: 10px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .warn::before { content: "⚠️ "; }
+
+  /* Dose quick card inline */
+  .dose-quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .dq-card {
+    background: linear-gradient(135deg, #181f38 0%, #111726 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px;
+  }
+  .dq-drug { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .dq-dose { font-size: 12px; color: var(--text); line-height: 1.6; }
+
+  /* No results */
+  .no-results { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 14px; }
+
+  /* Responsive */
+  @media (max-width: 360px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-num { font-size: 24px; }
+  }
+  @media (min-width: 640px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    .dose-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Priority border classes */
+  .pc4 { border-left: 3px solid var(--red); }
+  .pc3 { border-left: 3px solid var(--orange); }
+  .pc2 { border-left: 3px solid var(--yellow); }
+  .pc1 { border-left: 3px solid var(--green); }
+
+  /* Section headers */
+  .h-section { font-size: 12px; font-weight: 700; color: var(--text2); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.6px; padding-bottom: 3px; border-bottom: 1px solid var(--border); }
+  .content h4 { font-size: 13px; font-weight: 700; color: var(--accent); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+  /* Step boxes */
+  .step { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+  .step-num { width: 22px; height: 22px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 1px; }
+  .step-body { flex: 1; font-size: 14px; }
+
+  /* Info boxes */
+  .info-box { background: rgba(77,138,255,0.08); border: 1px solid rgba(77,138,255,0.2); border-left: 3px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 13.5px; }
+  .success-box { background: rgba(45,232,154,0.08); border: 1px solid rgba(45,232,154,0.2); border-left: 3px solid var(--green); border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 13.5px; }
+  .danger-box { background: rgba(255,69,96,0.1); border: 1px solid rgba(255,69,96,0.25); border-left: 3px solid var(--red); border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 13.5px; }
+
+  /* ===== LIGHT MODE ===== */
+  html.light {
+    --bg: #eef2ff;
+    --surface: #ffffff;
+    --surface2: #f0f4ff;
+    --border: #d0d8f0;
+    --text: #1a2240;
+    --text2: #5a6a8a;
+    --accent: #2a65e8;
+    --accent2: #1a50cc;
+    --accent-glow: rgba(42,101,232,0.15);
+    --green: #0ba85e;
+    --green2: #09904f;
+    --teal: #0ba09a;
+    --yellow: #b07800;
+    --red: #d01530;
+    --orange: #c05010;
+    --purple: #7030c0;
+  }
+  html.light body { background: var(--bg); color: var(--text); }
+  html.light #header { background: linear-gradient(135deg, #1a3585 0%, #0e2060 100%); }
+  html.light #header::after { background: linear-gradient(90deg, transparent, rgba(100,140,255,0.4), transparent); }
+  html.light .card { background: #ffffff !important; border-color: #cdd6f0 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important; }
+  html.light .card.open { box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 0 0 1px rgba(42,101,232,0.12) !important; }
+  html.light .card-header:hover { background: rgba(42,101,232,0.04) !important; }
+  html.light .card-header:active { background: #eef2ff !important; }
+  html.light .card-body { border-top-color: #d0d8f0 !important; }
+  html.light .content strong { color: #0a1535 !important; }
+  html.light .content em { color: #b07800 !important; }
+  html.light th { background: linear-gradient(135deg, #dce5ff 0%, #cdd8ff 100%) !important; color: #3a4a7a !important; border-bottom-color: #c0cce8 !important; }
+  html.light td { border-bottom-color: rgba(160,175,215,0.35) !important; }
+  html.light tr:nth-child(even) td { background: rgba(42,101,232,0.03) !important; }
+  html.light .tbl-wrap { border-color: #cdd6f0 !important; box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important; }
+  html.light .dose-card { background: linear-gradient(135deg, #eef2ff 0%, #e4ecff 100%) !important; border-color: #cdd6f0 !important; }
+  html.light .dq-card { background: linear-gradient(135deg, #eef2ff 0%, #e4ecff 100%) !important; border-color: #cdd6f0 !important; }
+  html.light .stat-card:nth-child(1) { background: linear-gradient(135deg, #dce5ff 0%, #cdd5ff 100%) !important; }
+  html.light .stat-card:nth-child(2) { background: linear-gradient(135deg, #fff3d5 0%, #ffe8aa 100%) !important; }
+  html.light .stat-card:nth-child(3) { background: linear-gradient(135deg, #d5fce8 0%, #aafad0 100%) !important; }
+  html.light .stat-card:nth-child(4) { background: linear-gradient(135deg, #d5fdfb 0%, #aafaf6 100%) !important; }
+  html.light .stat-card::before { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent) !important; }
+  html.light .progress-track { background: rgba(150,165,210,0.25) !important; }
+  html.light .progress-bar-wrap { box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; }
+  html.light .search-input { background: #ffffff !important; color: var(--text) !important; }
+  html.light .search-input::placeholder { color: #8090b0 !important; }
+  html.light .search-clear { background: rgba(190,200,235,0.8) !important; }
+  html.light mark { background: rgba(42,101,232,0.2) !important; color: #0a1535 !important; }
+  html.light .toast { background: #1a2555 !important; color: #e8eeff !important; }
+  html.light .pearl { background: rgba(42,101,232,0.07) !important; border-color: rgba(42,101,232,0.25) !important; }
+  html.light .warn { background: rgba(208,21,48,0.06) !important; border-color: rgba(208,21,48,0.22) !important; }
+  html.light .info-box { background: rgba(42,101,232,0.06) !important; border-color: rgba(42,101,232,0.18) !important; }
+  html.light .success-box { background: rgba(11,168,94,0.07) !important; border-color: rgba(11,168,94,0.2) !important; }
+  html.light .danger-box { background: rgba(208,21,48,0.06) !important; border-color: rgba(208,21,48,0.2) !important; }
+  html.light .btn-sm { background: #f0f4ff !important; border-color: #c8d4f0 !important; color: var(--text) !important; }
+  html.light .toggle-all-btn { background: #f0f4ff !important; border-color: #c8d4f0 !important; color: var(--text2) !important; }
+  html.light .chip { background: #ffffff !important; color: var(--text2) !important; border-color: #c8d4f0 !important; }
+  html.light .chip.active { background: var(--accent2) !important; color: #fff !important; }
+  html.light #nav { background: #ffffff !important; border-top-color: #c8d4f0 !important; }
+  html.light .nav-btn { color: var(--text2) !important; }
+  html.light .nav-btn.active { color: var(--accent) !important; }
+  html.light .h-section { color: #4a5a8a !important; border-bottom-color: #c8d4f0 !important; }
+  html.light .cat-header { color: #4a5a8a !important; }
+  html.light .stat-num { color: var(--accent) !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div>
+      <div id="header-title" style="font-size:17px;font-weight:700;">KTÜ Pediatri Sınav</div>
+      <div class="subtitle">Sözlü Sınav Rehberi • 53 Konu</div>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;font-size:22px;padding:4px;border-radius:8px;transition:transform 0.2s;" title="Tema değiştir">🌙</button>
+  </div>
+
+  <div id="main">
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">53</div>
+          <div class="stat-lbl">Toplam Konu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-bookmarked" style="color:var(--yellow)">0</div>
+          <div class="stat-lbl">Kaydedilen</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-learned" style="color:var(--green)">0</div>
+          <div class="stat-lbl">Öğrenilen</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-pct" style="color:var(--teal)">%0</div>
+          <div class="stat-lbl">Tamamlama</div>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label">
+          <span style="font-weight:600;">İlerleme</span>
+          <span id="prog-text" style="color:var(--text2);">0 / 50</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">Önceliğe göre filtrele:</div>
+      <div class="filter-row" id="home-priority-chips">
+        <div class="chip active" data-filter="all">Tümü</div>
+        <div class="chip" data-filter="p4">🔴 Çok Yüksek</div>
+        <div class="chip" data-filter="p3">🟠 Yüksek</div>
+        <div class="chip" data-filter="p2">🟡 Orta-Yüksek</div>
+        <div class="chip" data-filter="p1">🟢 Orta</div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">Kategoriye göre filtrele:</div>
+      <div class="filter-row" id="home-cat-chips"></div>
+      <div id="home-topics"></div>
+    </div>
+
+    <!-- TOPICS PAGE -->
+    <div id="page-topics" class="page">
+      <div class="section-title">
+        Tüm Konular
+        <button class="toggle-all-btn" id="toggle-all-btn" onclick="toggleAllCards()">Tümünü Aç</button>
+      </div>
+      <div id="topics-list"></div>
+    </div>
+
+    <!-- DOSES PAGE -->
+    <div id="page-doses" class="page">
+      <div class="section-title">Kritik İlaç Dozları 💊</div>
+      <div class="dose-grid" id="doses-grid"></div>
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div id="page-search" class="page">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="search" class="search-input" id="search-input" placeholder="Konu veya içerik ara..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- SAVED PAGE -->
+    <div id="page-saved" class="page">
+      <div class="section-title">Kaydettiklerim ⭐</div>
+      <div id="saved-list"></div>
+    </div>
+  </div>
+
+  <nav id="nav">
+    <button class="nav-btn active" data-page="home" onclick="navTo('home',this)">
+      <span class="nav-icon">🏠</span><span>Ana</span>
+    </button>
+    <button class="nav-btn" data-page="topics" onclick="navTo('topics',this)">
+      <span class="nav-icon">📚</span><span>Konular</span>
+    </button>
+    <button class="nav-btn" data-page="doses" onclick="navTo('doses',this)">
+      <span class="nav-icon">💊</span><span>Dozlar</span>
+    </button>
+    <button class="nav-btn" data-page="search" onclick="navTo('search',this)">
+      <span class="nav-icon">🔍</span><span>Ara</span>
+    </button>
+    <button class="nav-btn" data-page="saved" onclick="navTo('saved',this)">
+      <span class="nav-icon">⭐</span><span>Kaydettiklerim</span>
+    </button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const CATEGORIES = {
+  kritik: '🔴 Kritik Bilgiler',
+  acil: '🚨 Acil Pediatri',
+  hemat: '🩸 Hematoloji & Onkoloji',
+  kardiyoloji: '🫀 Kardiyoloji',
+  nefro: '🫘 Nefroloji',
+  yd: '👶 Yenidoğan',
+  endokrin: '⚗️ Endokrinoloji',
+  noro: '🧠 Nöroloji',
+  enfeksiyon: '🦠 Enfeksiyon & Romatoloji',
+  gastro: '🫁 Gastroenteroloji',
+  alerji: '🌿 Alerji & Dermatoloji',
+  strateji: '📋 Strateji'
+};
+
+const PRIORITY_LABELS = {4:'Çok Yüksek',3:'Yüksek',2:'Orta-Yüksek',1:'Orta'};
+
+const TOPICS = [
+{id:1,cat:'kritik',priority:4,title:'Kritik İlaç Dozları',tags:'doz,ilaç,adrenalin,diazepam,fenitoin,digoksin',content:`
+<div class="dose-quick-grid">
+<div class="dq-card"><div class="dq-drug">🔴 Adrenalin</div><div class="dq-dose">Anafilaksi: <strong>0.01 mg/kg IM</strong> (1:1000), max 0.3 mg<br>YD: 0.01-0.03 mg/kg IV (1:10.000)<br>Otoenjektör: 8-25 kg→0.15 mg; &gt;25 kg→0.30 mg</div></div>
+<div class="dq-card"><div class="dq-drug">🟣 Status Epileptikus</div><div class="dq-dose">Diazepam <strong>0.3 mg/kg IV</strong> (max 10mg) / 0.5 mg/kg rektal<br>Midazolam 0.2 mg/kg IM/bukkal<br>Fenitoin <strong>20 mg/kg IV YAVAŞ!</strong><br>Fenobarbital 20 mg/kg IV</div></div>
+<div class="dq-card"><div class="dq-drug">💧 Sıvı Tedavisi</div><div class="dq-dose">Bolus: <strong>20 mL/kg</strong> SF/RL 5-20 dk<br>İdame: 0-10 kg→100 mL/kg; 10-20 kg→1000+50×ek kg; &gt;20 kg→1500+20×ek kg<br><em>BOLUS DEFİSİTTEN ÇIKARILIR!</em></div></div>
+<div class="dq-card"><div class="dq-drug">🍬 DKA İnsülin</div><div class="dq-dose"><strong>0.05-0.1 Ü/kg/saat IV</strong><br><em>BOLUS VERİLMEZ!</em><br>K+&lt;3.3 → İnsülin BAŞLAMA!<br>Saatlik KŞ düşüş ≤%10 veya &lt;90 mg/dL</div></div>
+<div class="dq-card"><div class="dq-drug">🟡 Hipoglisemi (YD)</div><div class="dq-dose">%10 Dekstroz <strong>2 mL/kg IV</strong> bolus<br>İdame: 8 mg/kg/dk infüzyon</div></div>
+<div class="dq-card"><div class="dq-drug">🦴 Hipokalsemi (YD)</div><div class="dq-dose">%10 Ca Glukonat <strong>2 mL/kg IV YAVAŞ</strong> (1:1 SF ile)<br><em>Bradikardi riski! İYONİZE kalsiyum de! (Yakup)</em></div></div>
+<div class="dq-card"><div class="dq-drug">⚡ Hiperpotasemi</div><div class="dq-dose">Ca Glukonat 0.5-1 mL/kg IV yavaş<br>İnsülin 0.1 Ü/kg + Dex 5 mL/kg<br>Salbutamol 0.15 mg/kg nebül<br>NaHCO₃ 1-2 mEq/kg IV<br>Kayexalate 1 g/kg oral/rektal</div></div>
+<div class="dq-card"><div class="dq-drug">🔵 Demir Tedavisi</div><div class="dq-dose">Elementer Fe <strong>4-6 mg/kg/gün</strong> oral<br>Aç karnına, C vitamini ile, 2-3 doz<br>Hb düzeldikten <strong>3 ay</strong> daha devam</div></div>
+<div class="dq-card"><div class="dq-drug">💊 Digoksin</div><div class="dq-dose">Dijitalizasyon YD: 20-30 μg/kg IV<br>Süt çocuğu: 30-50 μg/kg IV<br>&gt;2 yaş: 20-40 μg/kg IV<br>Şema: ½+¼+¼ (8 saat arayla)<br>İdame: TDD'nin ¼-⅓'ü, 2×<br>Terapötik: <strong>0.8-2.0 ng/mL</strong></div></div>
+<div class="dq-card"><div class="dq-drug">💉 Steroidler</div><div class="dq-dose">ARA kardit: Prednizolon <strong>2 mg/kg/gün</strong><br>Astım: Prednizolon 1-2 mg/kg (max 40-60 mg)<br>ADEM: Metilprednizolon <strong>20-30 mg/kg/gün</strong><br>Nefrotik: Prednizolon 2 mg/kg/gün</div></div>
+<div class="dq-card"><div class="dq-drug">🦠 Antibiyotikler</div><div class="dq-dose">Erken sepsis: Ampisilin+Gentamisin<br>Geç sepsis: Ampisilin+Sefotaksim<br>Menenjit &gt;3ay: Seftriakson+Vankomisin<br>ARA: Benzatin PG IM tek doz</div></div>
+<div class="dq-card"><div class="dq-drug">👶 YD Canlandırma</div><div class="dq-dose">PIP: Prematüre 20 / Term 25 cmH₂O<br>PEEP: 5 cmH₂O<br>Ritim "Sık-iki-üç" (40-60/dk)<br>Kompresyon 3:1 (90+30=120/dk)<br>CPAP: KAH&gt;100 + spontan solunum</div></div>
+</div>
+<div class="pearl">Digoksin toksisitesi → Hipokalemi en sık kolaylaştırıcı! IV Kalsiyum + Digoksin = KESİN KONTRENDİKE!</div>
+<h4 class="h-section">📋 Max Doz Özeti</h4>
+<ul>
+<li><strong>Adrenalin IM:</strong> max 0.3 mg çocuk, 0.5 mg erişkin</li>
+<li><strong>Diazepam IV:</strong> max 10 mg | Rektal: max 10 mg</li>
+<li><strong>Fenitoin IV:</strong> max 1000 mg tek doz, hız max 1 mg/kg/dk</li>
+<li><strong>Fenobarbital IV:</strong> max 700 mg</li>
+<li><strong>Midazolam IM/bukkal:</strong> max 10 mg</li>
+<li><strong>Ca Glukonat %10:</strong> 2 mL/kg IV (max 20 mL/doz)</li>
+<li><strong>Ondansetron:</strong> max &lt;8 kg → 2 mg; 8-15 kg → 4 mg; &gt;15 kg → 8 mg</li>
+<li><strong>Mannitol:</strong> 0.5-1 g/kg IV (max 2 g/kg/doz), 15-20 dk'da ver</li>
+</ul>
+`},{id:2,cat:'kritik',priority:4,title:'Kritik Lab Değerleri ve Eşikler',tags:'lab,sepsis,mentzer,dehidratasyon,nefrotik,I/T,CRP,prokalsitonin',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Parametre</th><th>Eşik / Değer</th><th>Yorum</th></tr></thead>
+<tbody>
+<tr><td>I/T oranı (YD)</td><td>İlk hf &gt;0.16 / sonra &gt;0.2</td><td>Sepsis belirteci</td></tr>
+<tr><td>CRP</td><td>&gt;1 mg/dL</td><td>YD sepsis</td></tr>
+<tr><td>Prokalsitonin</td><td>&gt;2 ng/mL</td><td>Bakteriyel enfeksiyon</td></tr>
+<tr><td>Normal YD ısısı</td><td>36.5-37.5°C</td><td>—</td></tr>
+<tr><td><strong>Mentzer İndeksi</strong></td><td>MCV/RBC sayısı</td><td>&gt;13 → Demir eks. / &lt;13 → Talasemi</td></tr>
+<tr><td>HbA2</td><td>&gt;3.5%</td><td>Talasemi taşıyıcılığı kesin tanı</td></tr>
+<tr><td>GKS</td><td>≤8</td><td>Entübasyon (DKA istisnası!)</td></tr>
+<tr><td>Dehidratasyon dereceleri</td><td>Hafif %3-5 / Orta %6-9 / Ağır ≥%10</td><td>KDZ göğüsten bak!</td></tr>
+<tr><td>Nefrotik proteinüri</td><td>&gt;40 mg/m²/saat</td><td>Masif proteinüri eşiği</td></tr>
+<tr><td>FENa</td><td>&lt;%1 prerenal / &gt;%2 renal</td><td>—</td></tr>
+<tr><td>Polisitemi</td><td>Hct &gt;%65</td><td>Parsiyel exchange değerlendirme</td></tr>
+<tr><td>Digoksin terapötik</td><td>0.8-2.0 ng/mL</td><td>&gt;2 → toksisite riski</td></tr>
+<tr><td>Pankreatit</td><td>Amilaz/lipaz ≥3 kat artış</td><td>NSAİİ VERİLMEZ! AB rutin VERİLMEZ!</td></tr>
+</tbody>
+</table></div>
+<p><strong>SIRS Kriterleri</strong> (4'ten 2'si, en az biri ateş veya WBC):</p>
+<ul>
+<li>①Ateş &gt;38.5°C veya &lt;36°C</li>
+<li>②Taşikardi (yaşa göre)</li>
+<li>③Takipne (yaşa göre)</li>
+<li>④WBC &gt;12.000 veya &lt;4.000 veya bant &gt;%10</li>
+</ul>
+<p><strong>SIRS + odak → Sepsis → + organ disfonksiyonu → Ağır sepsis → + sıvıya dirençli hipotansiyon → Septik şok</strong></p>
+<div class="pearl">Digoksin EKG: ST çökmesi (kaşık/kepçe) + QT kısalması + PR uzaması = terapötik etki. Toksisite: Bigemine VES, AV blok, bidireksiyonel VT</div>
+<h4 class="h-section">🫀 Normal Vital Bulgular</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Yaş</th><th>KAH (atım/dk)</th><th>SKB (mmHg)</th><th>Solunum (dk)</th></tr></thead>
+<tbody>
+<tr><td>YD (&lt;1 ay)</td><td>100-160 | &lt;100 → CPR!</td><td>60-90</td><td>40-60</td></tr>
+<tr><td>0-3 ay</td><td>100-160</td><td>65-95</td><td>40-60</td></tr>
+<tr><td>3 ay-2 yaş</td><td>90-150</td><td>70-100</td><td>30-40</td></tr>
+<tr><td>2-10 yaş</td><td>70-120</td><td>90-110</td><td>20-30</td></tr>
+<tr><td>&gt;10 yaş</td><td>60-100</td><td>100-120</td><td>15-20</td></tr>
+</tbody>
+</table></div>
+`},{id:3,cat:'kritik',priority:4,title:'⛔ Asla Yapmayın — Sık Hatalar',tags:'hata,dikkat,kontrendike,aktif kömür,demir,DKA,HÜS',content:`
+<div class="warn">Bu liste sınav yanlışlarının tam listesidir. Ezberle!</div>
+<ul class="content">
+<li><strong>Aktif kömür → demir zehirlenmesinde VERMEYİN</strong> (bağlamaz!). Kontrendike: demir, asit/baz, hidrokarbon, korozif, bilinç bulanık, ileus, konvülsiyon</li>
+<li><strong>DKA'da insülin BOLUS vermeyin</strong> → beyin ödemi!</li>
+<li><strong>DKA'da K+&lt;3.3 ise insülin BAŞLAMAYIN</strong></li>
+<li><em>"Kalsiyum bakılır" DEMEYİN</em> → <strong>"İYONİZE kalsiyum bakılır"</strong> deyin (Yakup hoca eksi verir!)</li>
+<li><strong>HÜS'te antibiyotik VERMEYİN</strong>; <strong>trombosit transfüzyonu YAPMAYIN</strong></li>
+<li>Nefrotik sendromda steroid başlarken <strong>TB'yi DIŞLAYIN</strong></li>
+<li>Digoksin + hipokalemi → toksisite riski! K+ düzelt ÖNCE</li>
+<li>Digoksin + hiperkalsemi → toksisite riski!</li>
+<li><strong>IV KALSİYUM + digoksin = KESİN KONTRENDİKE!</strong> (stone heart riski)</li>
+<li><strong>Fenitoin HIZLI vermeyin</strong> → aritmi + hipotansiyon!</li>
+<li>İTP'de steroid vermeden önce <strong>Kİ biyopsisi YAPIN</strong> (lösemiyi dışla)</li>
+<li>LP öncesi <strong>papil ödem KONTROL EDİN</strong> → KİBAS varsa kontrendike</li>
+<li><em>Mukaddes hocada ekstra bilgi söylemeyin</em> — kağıtta yoksa eksi!</li>
+<li>Hiponatremi/Hipernatremiyi HIZLI düzeltmeyin → günde ≤10-12 mEq/L</li>
+<li>Septik şokta 3 bolus (60 mL/kg) yanıtsız → <strong>vazoaktif ilaç başla</strong></li>
+<li><strong>Tiroid fırtınasında aspirin VERMEYİN</strong> → serbest T4 artar</li>
+<li><strong>Kardiyojenik şokta sıvı verince KÖTÜLEŞIR!</strong></li>
+<li><strong>Akut pankreatitte aspirin VERMEYİN</strong></li>
+<li><strong>Demir eksikliği yokken iron vermeyin</strong> → oksidatif stres</li>
+<li><strong>Trombosit transfüzyonu:</strong> TTP/HÜS'te kontrendike; DIC'te sadece aktif kanama varsa</li>
+<li><strong>Hipernatremi düzeltme:</strong> max 0.5 mEq/L/saat veya günde 10-12 mEq/L — hızlı düzeltme → serebral ödem!</li>
+<li><strong>Salisilat zehirlenmesinde NaHCO₃ VER</strong> → idrar alkalinizasyonu (bu sefer uygun!)</li>
+<li><strong>Hemolitik sarılıkta (AIHA, Rh) albumin vermeden exchange YAPMAYIN</strong></li>
+</ul>
+`},{id:4,cat:'kritik',priority:4,title:'Hoca Rehberi — Kim Nasıl Soruyor?',tags:'hoca,strateji,sınav,Ali Cansu,Gökçe Pınar,Embiya,Mukaddes,Yakup,Beril,Erol,Fazıl',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Hoca</th><th>Alan</th><th>Stil</th><th>Konular</th><th>Kritik Not</th></tr></thead>
+<tbody>
+<tr><td><strong>Ali Cansu</strong></td><td>Nöroloji</td><td>🟢 Yardımcı</td><td>SP, ataksi, status, hipotonik infant, menenjit</td><td>Babinski, meningeal bulgular, serebellar muayene</td></tr>
+<tr><td><strong>Gökçe Pınar</strong></td><td>Hematoloji</td><td>🟢 Çok yardımcı</td><td>Demir eks., B12, miks anemi, İTP, tümör lizis</td><td>Hemogram yorumlama. İTP'de PY'da bir şey GÖRMEZSINIZ</td></tr>
+<tr><td><strong>Embiya Dilber</strong></td><td>YD + Acil</td><td>🟡 Doz istiyor!</td><td>YD sarılığı, Fallot, anafilaksi, DKA, meningokoksemi</td><td>DOZLARI EZBERLE! Her detayı istiyor</td></tr>
+<tr><td><strong>Fevziye Başkan</strong></td><td>YD Tarama + Sıvı</td><td>🟢 İpucu veriyor</td><td>YD taramaları, dehidratasyon, hematüri</td><td>Dehidratasyon hesabı, ORS kontrendikasyonları</td></tr>
+<tr><td><strong>Mukaddes Kalyoncu</strong></td><td>Geniş yelpaze</td><td>🔴 Onaylama YOK</td><td>HER ŞEY! Status, pankreatit, TB, İTP, LAP</td><td>Kağıtta yazanı söyle, ekstra söyleme → eksi!</td></tr>
+<tr><td><strong>Gülay Karagüzel</strong></td><td>Endokrin + YD</td><td>🟡 Hesaplama!</td><td>Boy kısalığı, hipotiroidi, Graves, dehidratasyon</td><td>Hesaplama yaptırıyor. Bolus defisitten çıkar</td></tr>
+<tr><td><strong>Sevim Şahin</strong></td><td>YD + Nöroloji</td><td>🟡 Biraz zorlar</td><td>TM vs GBS, TB, status, demir/B12, menenjit</td><td>TM'de seviye veren duyu kaybı söyle!</td></tr>
+<tr><td><strong>Beril Dilber</strong></td><td>Çocuk Nöroloji</td><td>🟢 Ağzından laf alır</td><td>Status(!), febril konvülsiyon, hipotonik/SMA, menenjit</td><td>Status'u HER ŞEYİYLE bilin. SMA: 3 hipotoni muayenesi</td></tr>
+<tr><td><strong>Erol Erduran</strong></td><td>Hemo+Nefro</td><td>🟡 Mekanizma!</td><td>K vit eks., GN, KKY, B12, lösemi/TLS</td><td>Mekanizma! Pulsus alternans önemli</td></tr>
+<tr><td><strong>Yakup Aslan</strong></td><td>Yenidoğan</td><td>🟢 Korkutucu ama iyi</td><td>Aşı, YD konvülsiyon, anafilaksi, ARA, YD canlandırma</td><td>İYONİZE kalsiyum! Glukoza topuktan bak!</td></tr>
+<tr><td><strong>Emine Ayça</strong></td><td>Hemo+Nefro</td><td>🟢 Çok sabırlı</td><td>Miks anemi, oligüri/ATN, baş ağrısı, İTP, YD sepsisi</td><td>Önemli noktaları atlamayın yeter</td></tr>
+<tr><td><strong>Fazıl Orhan</strong></td><td>Alerji + Endokrin</td><td>🔴 ZORLAR</td><td>Ürtiker patogenez, Fallot, AD, pnömoni, boy kısalığı</td><td>Kendi sorularını ÇEKMEMEYE çalışın! Patogenez soruyor</td></tr>
+<tr><td><strong>Elif Bahat</strong></td><td>Genel Pediatri</td><td>🟢 Rahatlatıcı</td><td>ARA, hematüri/nefrotik, astım, kabızlık, GBS, aşı</td><td>Nefrotik+steroid→TB riski. Döküntü eşleşmesi</td></tr>
+<tr><td><strong>Burcu Güven</strong></td><td>Genel + Acil</td><td>🟢 EN RAHAT!</td><td>Pnömoni, KAH, inme, anafilaksi, ADEM, menenjit</td><td>İpucu veriyor. Tekrarlayan AC enfeksiyonu kurtarma</td></tr>
+<tr><td><strong>Filiz Aktürk Acar</strong></td><td>Genel Pediatri</td><td>🟡 Kağıda artı atıyor</td><td>Astım (nebül+doz+evde tedavi), hipoglisemi dozu, hipotiroidi taraması, hipomagnezemi</td><td>Söylediklerine göre kağıda artı atıyor. Sistematik say, her adımı söyle</td></tr>
+<tr><td><strong>Gül Şalcı</strong></td><td>Nöroloji/Genel</td><td>🟢 Çok yardımcı</td><td>Status epileptikus (dozlarına kadar!), pleksus brakialis, SMA</td><td>Status'u her basamakla + dozlarıyla sor. Cevap alamazsa ağzından alıyor</td></tr>
+<tr><td><strong>Ayşenur Bahadır</strong></td><td>Genel Pediatri</td><td>🟡 Kağıttaki cevap!</td><td>Hipotonik infant/SP, pleksus brakialis</td><td>Kağıttaki cevapların aynısını bekliyor. Yönlendiriyor ama eksik kısımları "yapabilir mi?" diye soruyor</td></tr>
+<tr><td><strong>Nalan Yıldız</strong></td><td>Nöroloji</td><td>🟢 Yardımcı</td><td>İskemik inme, GBS/TM farkı</td><td>Kağıt destesinden çekiyorlar. Yetersizse tekrar çekip yardım ediyor</td></tr>
+<tr><td><strong>Ahmet Kağan Özkaya</strong></td><td>Genel/Acil</td><td>🟢 Sizi geçirmek için uğraşıyor</td><td>LAP→lösemi, bilinç kaybı→ADEM, astım atak, triyaj, dehidratasyon, TLS</td><td>Liste sırasına göre alıyor. Doğru cevabı söyleyin diye uğraşıyor. Dozda takılsa bile yardım ediyor</td></tr>
+<tr><td><strong>Mustafa İmamoğlu</strong></td><td>Genel Pediatri</td><td>🟡 Derse katılıma bakıyor</td><td>Öksürük+ateş (pnömoni), YD taraması, lösemi/onkolojik aciller, TB, ARA</td><td>Dersine katılırsa sana iyi davranıyor. Ön tanıdan tedaviye her şeyi eksiksiz bilmek gerekiyor</td></tr>
+<tr><td><strong>Gülay Kaya</strong></td><td>Genel/Endokrin</td><td>🟢 Çok yardımcı</td><td>Öksürük+ateş, şok (pediatrik üçgen), boy kısalığı, astım atak, oligüri</td><td>Çok yardımcı oluyor. Pediatrik değerlendirme üçgenini VE ABCDE'yi unutmayın</td></tr>
+<tr><td><strong>Merve Kişioğlu</strong></td><td>Genel/Acil</td><td>🟢 Ağzından laf alır</td><td>SIRS/sepsis/septik şok yönetimi, demir eksikliği ayırıcı tanısı, aşı takvim değişiklikleri</td><td>Cevaplayamasanız bile ağzınızdan almaya çalışıyor. Septik şok sıvısı güncellendi (Ringer Laktat!)</td></tr>
+</tbody>
+</table></div>
+`},{id:5,cat:'acil',priority:3,title:'Yenidoğan Canlandırması',tags:'yenidoğan,canlandırma,PBV,kompresyon,spo2,pip,peep,apne',content:`
+<p><strong>İlk 30 saniyede 3 soru:</strong></p>
+<ul>
+<li>①Term mi? (≥37 hf) ②Kas tonusu iyi mi? ③Ağlıyor/etkili soluyor mu?</li>
+<li>Üçü EVET → Anne karnına, cilt teması, gözlem</li>
+<li>Herhangi birine HAYIR → Başlangıç basamakları</li>
+</ul>
+<p><strong>Başlangıç basamakları:</strong></p>
+<ul>
+<li>≤32 hf → polietilen torbaya koy (KURULATMA!). ≥32 hf → kurulayıp radyan ısıtıcıya al</li>
+<li>Pozisyon: Koklama pozisyonu (hafif ekstansiyon)</li>
+<li>Aspirasyon: Önce AĞIZ sonra BURUN (ters yapma → vagal bradikardi!)</li>
+<li>Taktil uyaran: Ayak tabanına fiske, sırt ovma</li>
+</ul>
+<p><strong>PBV Endikasyonu:</strong> Apne/gasping veya KAH &lt;100</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Parametre</th><th>Prematüre</th><th>Term</th></tr></thead>
+<tbody>
+<tr><td>PIP</td><td>20 cmH₂O</td><td>25 cmH₂O</td></tr>
+<tr><td>PEEP</td><td colspan="2">5 cmH₂O sabit</td></tr>
+<tr><td>FiO₂</td><td>%21-30</td><td>%21</td></tr>
+<tr><td>Ritim</td><td colspan="2">"Sık-iki-üç" = 40-60/dk</td></tr>
+</tbody>
+</table></div>
+<p><strong>PBV yanıt yok → MR.SOPA:</strong> Maske düzelt, Repozisyon, Suction, Open mouth, Pressure artır, Alternatif havayolu (ETT)</p>
+<p><strong>KAH &lt;60 + etkili ventilasyon → Kompresyon:</strong></p>
+<ul>
+<li>Sternum alt 1/3, İki başparmak tekniği</li>
+<li>Derinlik: Göğüs çapının 1/3'ü</li>
+<li>3:1 oranı (90 kompresyon + 30 ventilasyon = 120/dk)</li>
+<li>FiO₂ → %100'e çıkar</li>
+</ul>
+<p><strong>60 sn CPR → KAH &lt;60 → Adrenalin:</strong> 0.01-0.03 mg/kg IV (1:10.000) | ETT: 0.05-0.1 mg/kg</p>
+<p><strong>Hedef SpO₂:</strong> 1dk→%60-65 | 2dk→%65-70 | 3dk→%70-75 | 5dk→%80-85 | 10dk→%85-95</p>
+<p><strong>KAH &gt;100 + solunum güçlüğü → CPAP</strong> 5-8 cmH₂O</p>
+<div class="pearl">Kendi şişen balon: ①PEEP ayarlanabilir ②Manometre takılabilir</div>
+<h4 class="h-section">⚠️ Özel Durumlar</h4>
+<ul>
+<li><strong>Mekonyal sıvı + deprese bebek</strong> (tonüs yok, solumuyorsa) → entübasyon + trakeal aspirasyon. Vigör olan bebekte (ağlıyor, tonüs iyi) → entübasyon YOK, sadece ağız-burun temizle</li>
+<li><strong>CPAP endikasyonu:</strong> KAH&gt;100 + spontan solunum VAR + solunum güçlüğü (inleme, taşipne, burun kanadı solunumu)</li>
+<li><strong>Adrenalin IV yoksa ETT:</strong> 0.05-0.1 mg/kg 1:10.000 konsantrasyonundan</li>
+<li><strong>Canlandırma ne zaman durdurulur:</strong> 20 dk boyunca asistol → aile ile görüşme, etik karar</li>
+</ul>
+`},{id:6,cat:'acil',priority:3,title:'Anafilaksi — Tanı ve Tedavi',tags:'anafilaksi,adrenalin,vazovagal,tanı kriteri,bifazik,glukagon,otoenjektör',content:`
+<p><strong>Anafilaksi vs Vazovagal (EN KRİTİK FARK: KVS!):</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Bulgu</th><th>Anafilaksi</th><th>Vazovagal</th></tr></thead>
+<tbody>
+<tr><td>Cilt</td><td>Ürtiker/kızarıklık/SICAK</td><td>Solukluk/soğuk/nemli</td></tr>
+<tr><td><strong>KVS ⚡</strong></td><td><strong>Hipotansiyon + TAŞİKARDİ</strong></td><td><strong>Hipotansiyon + BRADİKARDİ</strong></td></tr>
+<tr><td>Solunum</td><td>Bronkospazm/stridor</td><td>Normal</td></tr>
+<tr><td>GİS</td><td>İshal/kusma/kramp</td><td>Hafif bulantı</td></tr>
+<tr><td>Bacak kaldırma</td><td>DÜZELMEZ</td><td>DÜZELİR!</td></tr>
+</tbody>
+</table></div>
+<p><strong>3 Tanı Kriteri:</strong></p>
+<ul>
+<li><strong>Kriter 1:</strong> Akut deri/mukoza tutulumu + (solunum bozukluğu VEYA KB düşüşü)</li>
+<li><strong>Kriter 2:</strong> Alerjene maruziyetten sonra ≥2 bulgu: deri, solunum, KB, GİS</li>
+<li><strong>Kriter 3:</strong> Bilinen alerjene maruziyet → CİLT OLMASA BİLE hipotansiyon/stridor/bronkospazm</li>
+</ul>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li><strong>ADRENALİN:</strong> 0.01 mg/kg IM (1:1000), uyluk anterolateral (vastus lateralis). Max çocuk 0.3 mg. 5-15 dk arayla max 3 doz. 2 doz yanıtsız → IV infüzyon</li>
+<li><strong>Beta-blokör kullanan:</strong> Glukagon 20-30 μg/kg IV</li>
+<li>IV sıvı: 20 mL/kg SF bolus</li>
+<li>Antihistaminik: Difenhidramin 1-2 mg/kg IV (TRAMATÖRİK TEDAVİ DEĞİL!)</li>
+<li>Kortikosteroid: Bifazik reaksiyon profilaksisi (etkisi 4-6 saat sonra)</li>
+<li>Bronkospazm → SABA nebül. <strong>Stridor → Laringeal tutulum!</strong> → Nebül adrenalin (üst hava yolu ödemi)</li>
+<li>Gözlem: En az 4-8 saat (bifazik reaksiyon %5-20 vakada, 1-72 saat sonra!)</li>
+<li>Taburculuk: Otoenjektör reçete et: 8-25 kg→EpiPen Jr 0.15 mg; &gt;25 kg→EpiPen 0.30 mg</li>
+<li>Alerjist yönlendirme taburculukta şart!</li>
+</ul>
+<h4 class="h-section">📋 Yaklaşım Sırası (Ezberle 1→4)</h4>
+<div class="step"><div class="step-num">1</div><div class="step-body"><strong>ADRENALİN IM</strong> anterolateral uyluk (vastus lateralis) — HER ŞEYDEN ÖNCE!</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body"><strong>Pozisyon:</strong> Sırtüstü yat, bacaklar yukarı. Nefes güçlüğü → oturtur</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body"><strong>O₂ ver</strong> yüksek akım maske</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body"><strong>IV erişim</strong> → 20 mL/kg SF bolus</div></div>
+<div class="info-box"><strong>Adrenalin infüzyon (2 IM doz yanıtsızsa):</strong> 0.05-1 μg/kg/dk IV<br><strong>Glukagon (beta-blokör kullananlar):</strong> 20-30 μg/kg IV bolus (max 1 mg) → 5-15 μg/kg/dk infüzyon</div>
+<div class="pearl"><strong>Yakup Aslan ekstra sormuş:</strong> Laringeal tutulumda ne duyulur? → <strong>STRİDOR</strong> (üst hava yolu obstrüksiyonu). Alt hava yolu → wheezing/bronkospazm. Stridor + anafilaksi → nebül adrenalin + intübasyon hazırlığı!</div>
+`},{id:7,cat:'acil',priority:3,title:'Status Epileptikus — Protokol + Etyoloji',tags:'status,diazepam,fenitoin,fenobarbital,nöbet,midazolam,levetirasetam,valproat',content:`
+<p><strong>Tanım:</strong> &gt;5 dk nöbet VEYA bilinç açılmadan tekrarlayan nöbet</p>
+<p><strong>Etyoloji:</strong></p>
+<ul>
+<li>Enfeksiyöz: Menenjit, Ensefalit (HSV en sık!), ADEM</li>
+<li><em>Metabolik (DÜZELTİLEBİLİR!):</em> Hipoglisemi (İLK BAK!), hiponatremi, hipokalsemi, hipomagnezemi</li>
+<li>Yapısal: Tümör, AVM, inme, travma</li>
+<li>Toksik: Teofilin, izoniazid, organofosfat; ilaç kesilmesi (antiepileptik!)</li>
+<li>Otoimmün: Anti-NMDA ensefaliti (genç kızlarda!)</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Zaman</th><th>Basamak</th><th>İlaç / Doz</th></tr></thead>
+<tbody>
+<tr><td>0-5 dk</td><td>ABC, damar yolu, O₂</td><td><strong>PARMAK UCUNDAN KŞ!</strong> KŞ&lt;50 → %10 Dex 2 mL/kg IV</td></tr>
+<tr><td>5-15 dk</td><td>Benzodiazepin (1. basamak)</td><td>Diazepam <strong>0.3 mg/kg IV</strong> (max 10mg) / 0.5 mg/kg rektal<br>Midazolam 0.2 mg/kg IM/bukkal<br><em>Max 2 doz! (3. doz → solunum depresyonu)</em></td></tr>
+<tr><td>15-30 dk</td><td>2. basamak</td><td>Fenitoin <strong>20 mg/kg IV YAVAŞ</strong> (max 1 mg/kg/dk, kardiyak monitör!)<br>Alt: Valproat 20-40 mg/kg IV veya Levetirasetam 20-60 mg/kg IV</td></tr>
+<tr><td>30-60 dk</td><td>Refrakter</td><td>Fenobarbital <strong>20 mg/kg IV</strong> (entübasyon hazır!)<br>Midazolam infüzyon → YBÜ</td></tr>
+<tr><td>&gt;60 dk</td><td>Süper refrakter</td><td>Tiopental, Ketamin. EEG: burst-suppression hedef</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">Nöbetin en sık düzeltilebilir metabolik nedeni hipoglisemidir!</div>
+<div class="warn">GKS ≤8 → entübasyon (DKA'da Kussmaul kompansasyon — istisnası!). Beril her sınav status soruyor, HER ŞEYİYLE bilin!</div>
+<h4 class="h-section">⚠️ Kritik Eklemeler</h4>
+<ul>
+<li><strong>İzoniazid (INH) nöbeti:</strong> Benzodiazepin ETKİSİZ! → <strong>Piridoksin 70 mg/kg IV (max 5 g)</strong></li>
+<li>Refrakter status: EEG monitörizasyon şart (non-konvülsif status!)</li>
+<li>Nöbet sona erdi ama bilinç gelmiyorsa → <strong>Non-konvülsif status düşün → EEG çek</strong></li>
+<li><strong>Todd paralizisi:</strong> Post-iktal geçici paralizi, 30 dk–24 saat. Kendiliğinden geçer, inme ile karışır</li>
+<li><strong>Febril status (&gt;30 dk):</strong> HSV ensefalitini MUTLAKA dışla → LP + BOS HSV PCR + <strong>Asiklovir başla</strong> (20 mg/kg/doz 8 saatte bir, max 60 mg/kg/gün)</li>
+<li><strong>Max dozlar:</strong> Fenitoin max 1000 mg (hız max 1 mg/kg/dk) | Fenobarbital max 700 mg | Midazolam max 10 mg</li>
+</ul>
+`},{id:8,cat:'acil',priority:4,title:'Dehidratasyon + Sıvı Tedavisi',tags:'dehidratasyon,sıvı,bolus,defisit,ORS,holliday,KDZ,turgor,ondansetron',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Bulgu</th><th>Hafif %3-5</th><th>Orta %6-9</th><th>Ağır ≥%10</th></tr></thead>
+<tbody>
+<tr><td>Bilinç</td><td>Normal</td><td>İrritabl</td><td>Letarjik</td></tr>
+<tr><td>Gözyaşı</td><td>Var</td><td>Azalmış</td><td>Yok</td></tr>
+<tr><td>Mukoza (ağız içi + sklera!)</td><td>Nemli</td><td>Kuru</td><td>Çatlak</td></tr>
+<tr><td>Turgor</td><td>Normal</td><td>↓ (2 sn)</td><td>↓↓ (&gt;2 sn)</td></tr>
+<tr><td>Fontanel</td><td>Normal</td><td>Çökük</td><td>Çok çökük</td></tr>
+<tr><td><strong>KDZ (göğüsten!)</strong></td><td>&lt;2 sn</td><td>2-3 sn</td><td>&gt;3 sn</td></tr>
+<tr><td>Nabız</td><td>Normal</td><td>Taşikardi</td><td>Zayıf/filiform</td></tr>
+</tbody>
+</table></div>
+<div class="warn"><strong>Yakup Aslan sormuş!</strong> Mukoza değerlendirmesinde → <strong>ağız içine bak</strong> (sublingual + bukkal). Gözün beyazına (skleraya) da bak! KDZ → <strong>MUTLAKA göğüsten</strong> (parmak uçlarından ölçmeyin!)</div>
+<p><strong>ORS (hafif-orta):</strong> 50-100 mL/kg, 4 saatte, 5-10 dk küçük yudumlar. Emzirmeye devam!</p>
+<p><strong>Ondansetron:</strong> 0.15 mg/kg IV/oral (inatçı kusma)</p>
+<p><strong>ORS KONTRENDİKE:</strong> ①Şok ②İnatçı/biliyer kusma ③İleus/barsak obstrüksiyonu ④Bilinç bulanıklığı ⑤Ağır malnutrisyon</p>
+<p><strong>Ağır dehidratasyon hesabı (10 kg, %10 örnek):</strong></p>
+<ul>
+<li>Adım 1 - Bolus: 20 mL/kg = <strong>200 mL</strong>, 5-20 dk</li>
+<li>Adım 2 - Defisit: 10 × 10 × 10 = <strong>1000 mL</strong></li>
+<li><em>⚠️ BOLUS DEFİSİTTEN ÇIKARILIR!</em> Kalan defisit: 1000-200 = <strong>800 mL</strong></li>
+<li>Adım 3 - İdame (Holliday-Segar): 0-10 kg = 100 mL/kg/gün = <strong>1000 mL/gün</strong></li>
+<li>Adım 4 - Toplam 24 saat: 800+1000 = ~1800 mL</li>
+<li>Adım 5 - Dağılım: Yarısı ilk 8 saatte, yarısı sonraki 16 saatte</li>
+</ul>
+<div class="pearl">Holliday-Segar: 0-10 kg → 100 mL/kg; 10-20 kg → 1000 + 50×ek kg; &gt;20 kg → 1500 + 20×ek kg</div>
+<h4 class="h-section">🔎 Dehidratasyon Tipleri (Na'ya göre)</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Tip</th><th>Na (mEq/L)</th><th>Mekanizma</th><th>Risk</th></tr></thead>
+<tbody>
+<tr><td><strong>İzonatremik (en sık %80)</strong></td><td>130-150</td><td>İzotonik kayıp</td><td>—</td></tr>
+<tr><td><strong>Hiponatremik</strong></td><td>&lt;130</td><td>Tuz kaybı fazla</td><td>Serebral ödem! Yavaş düzelt (max 0.5-1 mEq/L/saat)</td></tr>
+<tr><td><strong>Hipernatremik (EN TEHLİKELİ)</strong></td><td>&gt;150</td><td>Su kaybı fazla</td><td>Beyin hücreleri büzüşür. ÇOOOOK yavaş düzelt: 24-48 saatte Na 10-12 mEq/L düşür!</td></tr>
+</tbody>
+</table></div>
+<div class="danger-box"><strong>Hipernatremik dehidratasyon hatırlatma:</strong> "Şeker çocuk" — hamuru sert, turgor paradoksal iyi gözükebilir!</div>
+<div class="info-box"><strong>Ondansetron dozu (inatçı kusma):</strong> 0.15 mg/kg IV/oral | Max: &lt;8 kg → 2 mg; 8-15 kg → 4 mg; &gt;15 kg → 8 mg</div>
+`},{id:9,cat:'acil',priority:3,title:'Şok Tipleri + Septik Şok + SIRS',tags:'şok,sepsis,SIRS,noradrenalin,bolus,kardiyojenik,hipovolemik,vazopressör',content:`
+<p><strong>Pediatrik Değerlendirme Üçgeni (30 sn, dokunmadan!):</strong></p>
+<ul><li>①Görünüm (tonus, etkileşim, bakış) ②Solunum işi ③Dolaşım (cilt rengi, KDZ)</li></ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Şok Tipi</th><th>Mekanizma</th><th>Klinik</th><th>Tedavi</th></tr></thead>
+<tbody>
+<tr><td><strong>Hipovolemik (en sık!)</strong></td><td>Volüm↓</td><td>Soğuk-soluk cilt</td><td>IV sıvı ile DÜZELİR</td></tr>
+<tr><td><strong>Septik (Dağılımsal)</strong></td><td>Vazodilatasyon</td><td>Erken sıcak→geç soğuk</td><td>AB + sıvı + vazoaktif</td></tr>
+<tr><td><strong>Kardiyojenik</strong></td><td>Pompa↓</td><td>Soğuk + HEPATOMEGALİ</td><td>Sıvı verince <em>KÖTÜLEŞIR!</em></td></tr>
+<tr><td><strong>Obstrüktif</strong></td><td>Mekanik tıkanma</td><td>Tamponad/pnömotoraks</td><td>Spesifik tedavi</td></tr>
+</tbody>
+</table></div>
+<p><strong>Septik Şok Tedavisi:</strong></p>
+<ul>
+<li>20 mL/kg SF veya Ringer Laktat bolus, 5-20 dk. 3× tekrar (60 mL/kg)</li>
+<li>60 mL/kg yanıtsız → Vazoaktif ilaç:</li>
+<ul>
+<li><strong>Soğuk şok</strong> (vazokonstriksiyon, KDZ uzamış) → <strong>ADRENALİN</strong> 0.05-0.3 μg/kg/dk</li>
+<li><strong>Sıcak şok</strong> (vazodilatasyon, flash KDZ) → <strong>NORADRENALİN</strong> 0.05-0.3 μg/kg/dk</li>
+</ul>
+<li>Antibiyotik: İlk SAATTE geniş spektrum!</li>
+</ul>
+<h4 class="h-section">🔄 Güncel Septik Şok Sıvısı (Merve Kişioğlu özellikle belirtti!)</h4>
+<div class="info-box"><strong>Güncel kılavuz değişikliği:</strong> Septik şokta <strong>Ringer Laktat (RL)</strong> tercih ediliyor (hiperkoloremik asidoz riski az). SF de kullanılabilir. İzotonik sıvı 10-20 mL/kg bolus, 5-20 dk. 3× tekrar değerlendirme (max 60 mL/kg)</div>
+<p><strong>Pediatrik Değerlendirme Üçgeni (Gülay Kaya özellikle istiyor):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>①Görünüm (tonus, etkileşim, gözlerin bakışı, ağlama)</li>
+<li>②Solunum işi (retraksiyonlar, burun kanadı, stridor, hışıltı)</li>
+<li>③Dolaşım (cilt rengi, KDZ, solgunluk, siyanoz)</li>
+</ol>
+<div class="danger-box"><strong>ABCDE'yi de unutmayın!</strong> Pediatrik üçgenden sonra ABCDE ile sistematik değerlendirme yapın. Gülay Kaya her ikisini de bekliyor.</div>
+<p><strong>Kompanse vs Dekompanse Şok (Gülay Kaya soruyor):</strong></p>
+<ul>
+<li><strong>Kompanse şok:</strong> KB NORMAL (kompansatuar mekanizmalar çalışıyor) + taşikardi + KDZ uzamış + solukluk</li>
+<li><strong>Dekompanse şok:</strong> HİPOTANSİYON + tüm kompansatuar mekanizmalar yetersiz → çok kritik!</li>
+</ul>
+`},{id:10,cat:'acil',priority:3,title:'Bilinç Bozukluğu / ADEM / Nörokutanöz',tags:'bilinç,ADEM,GKS,AEIOU,nörokutanöz,NF1,tuberoskleroz,herniyasyon,beyin sapı,kornea,pupil,okülosefal,doll,beyin ölümü',content:`
+<p><strong>AEIOU TIPS:</strong></p>
+<ul>
+<li>A: Alkol, Asidoz (DKA)</li><li>E: Epilepsi, Ensefalit, Elektrolit</li>
+<li>I: İnme, İnsülin (hipoglisemi!)</li><li>O: Oksijenasyon</li>
+<li>U: Üremi</li><li>T: Travma, Tümör</li>
+<li>I: İnfeksiyon (menenjit, ADEM)</li><li>P: Psikiyatrik (organik dışlandıktan sonra!)</li>
+<li>S: Şok, Subaraknoid kanama</li>
+</ul>
+<p><strong>Kritik Muayene:</strong></p>
+<ul>
+<li>Unilateral dilate+fikse pupil → unkal herniasyon (CN III basısı)</li>
+<li>Papil ödem → KİBAS → LP KONTRENDİKE!</li>
+<li>Deserebre (uzama+pronasyon = beyin sapı, kötü) vs Dekortike (fleksiyon = kortikal, daha iyi)</li>
+<li>GKS ≤8 → entübasyon!</li>
+</ul>
+<h4 class="h-section">🧠 Beyin Sapı Refleksleri (Beril Hoca — Bilinç Kapalı Hastada)</h4>
+<div class="info-box"><strong>Beril hoca bilinç kapalı hastada şunları sorar:</strong> "Hangi reflekslere bakarsın?" — Sırası ile say!</div>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Refleks</th><th>Nasıl Değerlendirilir</th><th>Normal (Var)</th><th>Yorum</th></tr></thead>
+<tbody>
+<tr><td><strong>Pupil refleksi</strong></td><td>Işık tutulur, pupil gözlenir</td><td>İzolateral daralma</td><td>Dilate+fikse → unkal herniasyon (CN III)</td></tr>
+<tr><td><strong>Kornea refleksi</strong></td><td>Pamuk/gazlı bez ile kornea dokunuluşu</td><td>Göz kapanır (gözkapağı)</td><td>Kaybolmuşsa beyin sapı basısı</td></tr>
+<tr><td><strong>Okülosefal (Doll's eyes)</strong></td><td>Baş yavaşça yana çevrilir</td><td>Gözler karşı yönde kalır</td><td>Beyin sapı sağlam → gözler "yüzer". Yok ise beyin sapı hasarı</td></tr>
+<tr><td><strong>Okülovestibüler (Soğuk su)</strong></td><td>Kulağa 20-50 mL buz soğuğu su verilir</td><td>Gözler o tarafa deviye olur</td><td>COWS: Cold=Opposite, Warm=Same. En güçlü beyin sapı testi</td></tr>
+<tr><td><strong>Öğürme refleksi</strong></td><td>Orofarinks arka duvarı uyarılır</td><td>Öğürme hareketi</td><td>Kaybolmuşsa alt beyin sapı (medulla) hasarı</td></tr>
+<tr><td><strong>Öksürme refleksi</strong></td><td>Trakeal aspirasyon</td><td>Öksürme</td><td>Entübe hastada değerlendirilir</td></tr>
+<tr><td><strong>Apne testi</strong></td><td>Ventilatör kesilir, CO₂ izlenir</td><td>Solunum hareketi başlar</td><td>Beyin ölümünde apne testi: PaCO₂ &gt;60 mmHg rağmen solunum yok</td></tr>
+</tbody>
+</table></div>
+<div class="danger-box"><strong>Beyin Ölümü Kriterleri (Özet):</strong> ①Koma (GKS 3, geri dönüşümsüz) ②Tüm beyin sapı refleksleri YOK ③Apne testi pozitif (PaCO₂ &gt;60 mmHg'ya rağmen solunum yok) — 2 kez doktor onayı gerekir</div>
+<p><strong>ADEM:</strong></p>
+<ul>
+<li>Postenfeksiyöz otoimmün demiyelinizasyon (ÜSYE/su çiçeği'nden 1-3 hf sonra)</li>
+<li><em>Klinik:</em> Akut ensefalopati (<strong>BİLİNÇ DEĞİŞİKLİĞİ ZORUNLU!</strong>) + multifokal defisitler</li>
+<li>MR: Beyaz cevherde bilateral, TÜM LEZYONLAR AYNI YAŞTA (MS'ten farkı!)</li>
+<li>Tedavi: IV Metilprednizolon 20-30 mg/kg/gün ×3-5 gün</li>
+</ul>
+<p><strong>Nörokutanöz:</strong></p>
+<ul>
+<li>NF-1: ≥6 café au lait, aksiller çiller, Lisch nodülleri → optik gliom</li>
+<li>Tuberoskleroz: Ash-leaf lekeler, adenoma sebase → infantil spazmlar</li>
+<li>Sturge-Weber: Port-şarap lekesi (V1) → intrakraniyal kalsifikasyon, epilepsi, glokom</li>
+</ul>
+`},{id:11,cat:'acil',priority:1,title:'Demir Zehirlenmesi',tags:'demir,zehirlenme,deferoksamin,aktif kömür,evre,şok',content:`
+<p><strong>Toksik doz:</strong> &gt;20 mg/kg elementer demir</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Evre</th><th>Zaman</th><th>Klinik</th></tr></thead>
+<tbody>
+<tr><td>1 - GİS</td><td>0-6 sa</td><td>Karın ağrısı, kusma, kanlı ishal</td></tr>
+<tr><td><strong>2 - Latent</strong></td><td>6-24 sa</td><td><em>YANILTICI DÜZELME!</em> Hasta iyi görünür</td></tr>
+<tr><td>3 - Şok</td><td>12-48 sa</td><td>Metabolik asidoz, şok, koagülopati</td></tr>
+<tr><td><strong>4 - Hepatotoks.</strong></td><td>2-5 gün</td><td><strong>KC nekrozu → EN MORTAL EVRE</strong></td></tr>
+<tr><td>5 - Obstrüksiyon</td><td>2-8 hf</td><td>GİS striktürleri</td></tr>
+</tbody>
+</table></div>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li><strong>Aktif kömür VERİLMEZ!</strong> (demiri bağlamaz)</li>
+<li>Total barsak yıkaması (WBI - polietilen glikol)</li>
+<li>Antidot: <strong>Deferoksamin 15 mg/kg/saat IV</strong> (serum Fe&gt;500 veya semptomatik)</li>
+<li>İdrar pembe-turuncu (vin rosé rengi) → şelatlama aktif</li>
+</ul>
+<div class="warn">WBI kontrendike: perforasyon, ileus, hemodinamik instabilite</div>
+`},{id:12,cat:'hemat',priority:4,title:'Anemiler — MCV\'ye Göre Yaklaşım',tags:'anemi,MCV,demir,talasemi,B12,Fanconi,Mentzer,hemolitik,Coombs,RDW,ferritin',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>MCV</th><th>Nedenler</th></tr></thead>
+<tbody>
+<tr><td>↓ Mikrositer</td><td>Demir eksikliği (en sık!), Talasemi taşıyıcılığı, Kronik hastalık, Kurşun, Sideroblastik</td></tr>
+<tr><td>Normal</td><td>Akut kan kaybı, Kronik hastalık, Hemolitik, Lösemi</td></tr>
+<tr><td>↑ Makrositer</td><td>B12, Folat, Aplastik anemi (Fanconi), Hipotiroidi, İlaç (MTX, valproat)</td></tr>
+</tbody>
+</table></div>
+<p><strong>Demir Eksikliği vs Talasemi Taşıyıcılığı:</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Parametre</th><th>Demir Eksikliği</th><th>Talasemi Taşıyıcı</th></tr></thead>
+<tbody>
+<tr><td><strong>RDW</strong></td><td><em>ÇOK YÜKSEK!</em></td><td>Normal (en önemli fark!)</td></tr>
+<tr><td>Ferritin</td><td>↓</td><td>Normal/↑</td></tr>
+<tr><td>Mentzer (MCV/RBC)</td><td>&gt;13</td><td>&lt;13</td></tr>
+<tr><td>Hb Elektroforezi</td><td>Normal</td><td>HbA2 &gt;3.5% → kesin tanı</td></tr>
+</tbody>
+</table></div>
+<p><strong>Demir Tedavisi:</strong> 4-6 mg/kg/gün elementer Fe, açkarnına, C vitamini ile. Retikülositoz: 5-7. gün. Hb normalden <strong>3 AY DAHA</strong> devam.</p>
+<p><strong>B12 Eksikliği (Erol!):</strong> Hipersegmente nötrofil PY'da. Homosistein↑ + MMA↑ (folattan farkı). Nörolojik: posterior kolon (vibrasyon kaybı). İmmerslund-Gräsbeck: B12 malabsorpsiyonu + proteinüri.</p>
+<div class="danger-box"><strong>🎯 Erol Hoca Tüyosu (B12):</strong> Erol hoca yanıtı beklerken sesin çıkmamasına tahammülü yok! Cevabı <em>kesin ve yüksek sesle</em> söyle: <strong>"Hipersegmente nötrofil!"</strong> → sonra devam et: "MMA ve homosistein yükselir, folat eksikliğinden bunu ile ayırt ederiz." Tereddütlü, alçak sesli, "efendim böyle olabilir" tarzdaki cevap puan kırdırır. Emin ol, direkt söyle!</div>
+<p><strong>Fanconi Aplastik Anemisi:</strong></p>
+<ul>
+<li>OR kalıtım, DNA onarım defekti. Pansitopeni + makrositoz + konjenital anomaliler</li>
+<li>Anomaliler: Mikrosefali, BAŞPARMAKyok/radius yokluğu(!), café au lait, renal anomali, kısa boy</li>
+<li>VSD + demir tedavisine yanıt yok + MCV yüksek → FANCONI düşün!</li>
+<li>Tanı: DEB/MMC testi. Tedavi: Kİ nakli. MDS/AML riski %15-20</li>
+</ul>
+<p><strong>Otoimmün Hemolitik Anemi:</strong></p>
+<ul>
+<li>Direkt Coombs (DAT): Hastanın KENDİ eritrositleri → eritrosit yüzeyinde IgG/kompleman → AIHA</li>
+<li>İndirekt Coombs (IAT): Serumdaki serbest antikorlar → cross-match</li>
+<li>AIHA Lab: LDH↑, indirekt bilirubin↑, haptoglobin↓, Direkt Coombs(+). PY: sferositler (BLAST YOK!)</li>
+</ul>
+<h4 class="h-section">📋 Yaklaşım Algoritması</h4>
+<ol class="content" style="padding-left:18px">
+<li>Hemogram → MCV'ye göre sınıfla (mikro/normo/makro)</li>
+<li>Mikrositer → Ferritin + RDW → Demir eks. (RDW yüksek) vs Talasemi taşıyıcı (RDW normal)</li>
+<li>Normositer → Retikülosit sayısı → Yüksekse hemolitik/kanama, düşükse kemik iliği sorunu</li>
+<li>Makrositer → B12 + Folat + Hipotiroidi + ilaç sorgula</li>
+<li>Hemolitik → Direkt Coombs (DAT) → Pozitifse AIHA, negatifse non-immün (HÜS, orak, sferositoz)</li>
+<li>Retikülosit düşük + pansitopeni → Kemik iliği biyopsisi (aplastik anemi, lösemi)</li>
+</ol>
+<div class="info-box"><strong>Mixt Anemi:</strong> Demir + B12 eksikliği birlikte → MCV YANLIŞlıkla normal görünür! Her ikisini de sorgula. Demir: Ferritin↓, RDW↑. B12: MMA↑, homosistein↑</div>
+<h4 class="h-section">💊 Demir Tedavisi — Tam Detay</h4>
+<ul>
+<li>Elementer Fe <strong>4-6 mg/kg/gün</strong> oral, 2-3 doza böl</li>
+<li>Açkarnına (ya da C vitamini ile); süt/çay/kalsiyum/antasit ile VERME</li>
+<li>Retikülositoz: 5-7. gün (yanıt göstergesi)</li>
+<li>Hb normalleşince <strong>3 AY DAHA</strong> devam (depo doldurmak için)</li>
+<li>Yanıt yok → uyumu sorgula, emilim bozukluğu (çölyak), yanlış tanı (talasemi)</li>
+</ul>
+<div class="success-box"><strong>Kronik hastalık anemisi farkı:</strong> Ferritin YÜKSEK (reaktan!), serum Fe↓, TDBK↓. Altta yatan tedavi gerekli, rutin Fe VERİLMEZ</div>
+`},{id:13,cat:'hemat',priority:3,title:'İTP — Yaklaşım + Lösemi Ayrımı + Tedavi',tags:'İTP,trombosit,lösemi,IVIG,steroid,purpura,megakaryosit,PY',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>İTP</th><th>Lösemi</th></tr></thead>
+<tbody>
+<tr><td>Genel durum</td><td>İyi/aktif</td><td>Kötü/halsiz</td></tr>
+<tr><td>FM</td><td>Peteşi/purpura, HSM YOK, LAP YOK</td><td>HSM VAR, LAP VAR, kemik ağrısı</td></tr>
+<tr><td>Hemogram</td><td>Plt çok↓, Hb+WBC NORMAL</td><td>Pansitopeni veya hiperlökositoz</td></tr>
+<tr><td><strong>PY</strong></td><td><em>"BİR ŞEY GÖRMEZSİNİZ!"</em> (dev trombosit olabilir)</td><td>BLAST GÖRÜRSÜNÜZ</td></tr>
+<tr><td>Kİ</td><td>Megakaryositler↑</td><td>Blast infiltrasyon &gt;%25</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">İTP'de PY'da bir şey göremezsiniz — Gökçe Pınar bu cümleyi bekliyor!</div>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li>Plt&gt;30.000 + kanama YOK → <strong>GÖZLEM!</strong> %70-80 spontan düzelir</li>
+<li>Plt&lt;20.000 VEYA aktif mukoza kanaması → IVIG 0.8-1 g/kg ×1-2 gün + Prednizolon 1-2 mg/kg</li>
+<li>Ateş varsa: Önce IVIG ver (steroid enfeksiyonu maskeler → lösemi kaçırılır)</li>
+<li><strong>Steroid ÖNCE: Kİ biyopsisi yap!</strong> (steroid blast hücrelerini baskılar)</li>
+<li>Kronik İTP (&gt;12 ay): Splenektomi, Rituksimab, TPO agonistleri (Eltrombopag)</li>
+</ul>
+<p><strong>Steroid Yan Etkileri (Gökçe Pınar!):</strong> Cushing, hiperglisemi, osteoporoz, büyüme geriliği, immünsüpresyon, peptik ülser, miyopati, katarakt, psikiyatrik, HT</p>
+`},{id:14,cat:'kardiyoloji',priority:4,title:'Kalp Yetmezliği — Klinik + Tedavi',tags:'KKY,kalp,taşikardi,hepatomegali,pulsus,digoksin,furosemid,inotrop',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Yaş</th><th>En Sık Neden</th></tr></thead>
+<tbody>
+<tr><td>Fetal</td><td>Ağır anemi, SVT, AV blok, hidrops fetalis</td></tr>
+<tr><td>YD (ilk hf)</td><td>Hipoplastik sol kalp, aort stenozu/koarktasyon, TGA (duktal bağımlı!)</td></tr>
+<tr><td>Süt çocuğu (1-6 ay)</td><td>Geniş VSD (<strong>EN SIK!</strong>), AVSD, büyük PDA</td></tr>
+<tr><td>Büyük çocuk</td><td>Romatizmal kapak (ARA sekeli!), miyokardit, dilate KMP</td></tr>
+</tbody>
+</table></div>
+<p><strong>Klinik Bulgular Sistematik:</strong></p>
+<ul>
+<li><strong>TAŞİKARDİ (EN ERKEN BULGU!).</strong> Emme sırasında terleme (karakteristik!)</li>
+<li>Takipne, dispne, krepitan raller, wheezing (kardiyak astım)</li>
+<li><strong>HEPATOMEGALİ (en önemli!)</strong>, JVD, periferik ödem</li>
+<li>Kilo alamama (failure to thrive), emme süresi uzamış</li>
+<li><strong>PULSUS ALTERNANS</strong> (kuvvetli-zayıf nabız = ciddi LV disfonksiyonu — Erol soruyor!)</li>
+<li>Gallop (S3). KTO &gt;%55</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>İlaç</th><th>Doz</th><th>Etki/Dikkat</th></tr></thead>
+<tbody>
+<tr><td>Furosemid</td><td>1-2 mg/kg/doz, 2-3×/gün</td><td>Preload↓. <em>Hipokalemi → digoksin toks. riski!</em></td></tr>
+<tr><td>Kaptopril/Enalapril</td><td>ACE inhibitörü</td><td>Afterload↓. Öksürük, hiperkalemi</td></tr>
+<tr><td>Digoksin</td><td>(Ayrı bölüm)</td><td>(+)İnotrop, (-)Kronotrop</td></tr>
+<tr><td>Karvedilol</td><td>β-blokör</td><td>YAVAŞ titre et! Akut dekompansasyonda BAŞLAMA!</td></tr>
+<tr><td>Spironolakton</td><td>1-3 mg/kg/gün</td><td>Hafif diüretik. ACEi ile hiperkalemi!</td></tr>
+<tr><td>Milrinon</td><td>0.25-0.75 μg/kg/dk IV</td><td>PDE-3 inhib. = inodilatatör (YBÜ)</td></tr>
+<tr><td>Dobutamin</td><td>5-20 μg/kg/dk IV</td><td>β1 agonist (YBÜ)</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">💊 Digoksin — Mekanizma + Dozlama + Toksisite</h4>
+<p><strong>Etki Mekanizması:</strong> Na/K ATPaz inhibe → Na⁺↑ intrasell. → Na/Ca değiştirici↓ → Ca²⁺↑ → kontraktilite↑ (+İnotrop). Vagal tonus↑ → AV ileti↓ (-Kronotrop, -Dromotrop)</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Yaş</th><th>Dijitalizasyon IV</th><th>Oral</th></tr></thead>
+<tbody>
+<tr><td>Prematüre</td><td>15-25 μg/kg</td><td>20-30 μg/kg</td></tr>
+<tr><td>Term YD (0-1 ay)</td><td>20-30 μg/kg</td><td>25-35 μg/kg</td></tr>
+<tr><td>Süt çocuğu (1ay-2y)</td><td>30-50 μg/kg</td><td>35-60 μg/kg</td></tr>
+<tr><td>&gt;2 yaş</td><td>20-40 μg/kg</td><td>25-50 μg/kg</td></tr>
+</tbody>
+</table></div>
+<p><strong>Dozlama şeması:</strong> TDD'nin ½ hemen → 8 sa ¼ → 8 sa ¼. Her dozdan ÖNCE KH kontrol! (Süt çocuğu &lt;100/dk, büyük çocuk &lt;80/dk → doz ATLA). İdame: TDD ¼-⅓, 2×/gün. Terapötik: <strong>0.8–2.0 ng/mL</strong>. Kan örneği son dozdan ≥6-8 saat sonra.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Toksisiteyi Kolaylaştıran</th><th>Mekanizma</th></tr></thead>
+<tbody>
+<tr><td><strong>HİPOKALEMİ (EN SIK!)</strong></td><td>K⁺ ve digoksin Na/K ATPaz'ı paylaşır</td></tr>
+<tr><td>Hiperkalsemi</td><td>Aditif etki → IV Ca + digoksin = KONTRENDİKE!</td></tr>
+<tr><td>Böbrek yetmezliği</td><td>Digoksin %60-80 böbrekten atılır → birikim</td></tr>
+<tr><td>İlaç etkileşimi</td><td>Amiodaron, verapamil, kinidin → dozu %50 azalt!</td></tr>
+</tbody>
+</table></div>
+<p><strong>Toksisite Bulguları:</strong> GİS (EN ERKEN: iştahsızlık, kusma) → Nörolojik (xantopsia) → KARDİYAK (bigemine VES, bidireksiyonel VT = EN TEHLİKELİ, AV blok)</p>
+<p><strong>EKG:</strong> ST çökmesi kaşık/kepçe, QTc kısalması, PR uzaması = terapötik etki (toksisite ≠!)</p>
+<p><strong>Tedavi:</strong> İlacı KES • Hipokalemi → K⁺ IV • AV blok → Atropin 0.02 mg/kg • VT → Lidokain/Fenitoin • Hayatı tehdit → <strong>FAB fragmanları (Digibind)</strong></p>
+<div class="warn">IV KALSİYUM VERME (stone heart = kardiyak arrest!) • Kinidin/verapamil/amiodaron ile etkileşim!</div>
+`},{id:16,cat:'nefro',priority:4,title:'Hematüri / APSGN / Nefritik vs Nefrotik / SLE Nefriti',tags:'hematüri,APSGN,C3,nefritik,nefrotik,proteinüri,kompleman,GAS,SLE,lupus,anti-dsDNA,hidroksiklorokin',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Glomerüler</th><th>Non-glomerüler</th></tr></thead>
+<tbody>
+<tr><td>İdrar rengi</td><td>Çay/kola rengi</td><td>Açık kırmızı/pembe</td></tr>
+<tr><td>Eritrositler</td><td>Dismorfik</td><td>İzomorfik</td></tr>
+<tr><td>Silindirler</td><td>Eritrosit silindir VAR</td><td>Yok</td></tr>
+</tbody>
+</table></div>
+<p><strong>APSGN:</strong> GAS (farenjit 1-3 hf, impetigo 3-6 hf) → immün kompleks → glomerüler inflamasyon</p>
+<ul>
+<li>Triad: ①Hematüri (çay rengi) ②Ödem (periorbital, sabah belirgin) ③Hipertansiyon</li>
+<li>Lab: C3↓ (C4 NORMAL! Alternatif yolak!), ASO↑, Eritrosit silindir(+)</li>
+<li><strong>C3 VE C4 düşerse → LUPUS düşün!</strong></li>
+<li>C3 &gt;8 hf düşük kalırsa → MPGN veya SLE düşün!</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Nefritik</th><th>Nefrotik</th></tr></thead>
+<tbody>
+<tr><td>Ana bulgu</td><td>Hematüri+HT+ödem</td><td>Masif proteinüri+hipoalbüminemi+ödem+hiperlipidemi</td></tr>
+<tr><td>Proteinüri</td><td>Var ama hafif</td><td><strong>MASIF (&gt;40 mg/m²/saat)</strong></td></tr>
+<tr><td>Albümin</td><td>Normal/hafif↓</td><td>ÇOK↓ (&lt;2.5 g/dL)</td></tr>
+<tr><td>C3</td><td>↓ (APSGN'de)</td><td>Normal (minimal change)</td></tr>
+<tr><td>Tedavi</td><td>Destek + antihipertansif</td><td>Prednizolon 2 mg/kg/gün ×4-6 hf</td></tr>
+</tbody>
+</table></div>
+<p><strong>Nefrotik 3 Komplikasyon:</strong></p>
+<ul>
+<li>①Enfeksiyon (IgG kaybı, <em>TB riski — steroid başlarken dışla!</em>)</li>
+<li>②Tromboz (antitrombin III kaybı → DVT/renal ven trombozu)</li>
+<li>③Hiperlipidemi</li>
+</ul>
+<h4 class="h-section">💊 APSGN Tedavisi</h4>
+<ul>
+<li>Hipertansiyon: Furosemid 1-2 mg/kg/doz IV (max 6 mg/kg/gün). Kalsiyum kanal blokörü (nifedipin) veya ACE inhibitörü</li>
+<li>GAS eradikasyonu: Penisilin 10 gün (enfeksiyon hala aktifse)</li>
+<li>Ödem: Tuz + sıvı kısıtlaması, diüretik</li>
+<li>Hipertansiyon ensefalopatisi: <strong>ACİL!</strong> Nifedipin sublingual 0.25 mg/kg veya IV nitroprusid</li>
+</ul>
+<div class="info-box">C3 8 haftadan uzun düşük kalırsa → MPGN veya SLE'yi dışla! APSGN'de C3 genellikle 6-8 hf içinde normalleşir</div>
+<h4 class="h-section">🦋 SLE / Lupus Nefriti — Tanı + Tedavi (Sıkça Soruluyor!)</h4>
+<p><strong>Tanı Kriterleri (SLICC 2012 — 4/11 kriter veya biyopsi konfirmasyonlu nefriti):</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Klinik</th><th>Laboratuvar</th></tr></thead>
+<tbody>
+<tr><td>Kelebek döküntü (nazolabial bölge KORUNMUŞ!)</td><td>ANA (+) en sık, non-spesifik</td></tr>
+<tr><td>Diskoid döküntü</td><td><strong>Anti-dsDNA (+) → hastalık aktivitesi göstergesi</strong></td></tr>
+<tr><td>Artrit (2+ eklem)</td><td><strong>Anti-Sm (+) → SLE'ye spesifik!</strong></td></tr>
+<tr><td>Oral ülser</td><td>C3 VE C4 ↓ (her ikisi birden → SLE!)</td></tr>
+<tr><td>Saçılma alopesi</td><td>Coombs (+) hemolitik anemi</td></tr>
+<tr><td>Nörolojik (psikoz, konvülsiyon)</td><td>Lökopeni &lt;4000, Lenfopeni &lt;1000, Trombositopeni</td></tr>
+<tr><td>Serozit (plörit, perikardit)</td><td>Antifosfolipid antikoru (tromboz riski!)</td></tr>
+<tr><td>Renal (proteinüri &gt;0.5 g/gün)</td><td>İdrarda eritrosit silindir</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">💊 Lupus Tedavisi — Tutuluma Göre</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Tutulum</th><th>Tedavi</th></tr></thead>
+<tbody>
+<tr><td>Tüm hastalara</td><td><strong>Hidroksiklorokin</strong> (anti-malarial, flare önler) + Güneşten korunma (SPF 50+)</td></tr>
+<tr><td>Artrit/artralji</td><td>NSAİİ (ibuprofen/naproksen) ± düşük doz steroid</td></tr>
+<tr><td><strong>Lupus nefriti (böbrek)</strong></td><td><strong>Yüksek doz steroid</strong> (prednizolon 2 mg/kg/gün) + Mikofenolat mofetil veya Siklofosfamid (şiddetli)</td></tr>
+<tr><td>Ödem (nefrotik komponent)</td><td><strong>Furosemid</strong> 1-2 mg/kg/doz + tuz kısıtlaması</td></tr>
+<tr><td>Şiddetli/organ tehdit</td><td>IV puls metilprednizolon 30 mg/kg/gün × 3 gün → oral steroid</td></tr>
+<tr><td>Steroid direnci</td><td>Belimumab (biyolojik) veya rituksimab (B-hücre depletion)</td></tr>
+</tbody>
+</table></div>
+<div class="danger-box"><strong>⚠️ Lupus Nefriti Takip:</strong> Anti-dsDNA titresi hastalık aktivitesini izler (yükselirse → flare!). Kompleman C3/C4 düşüklüğü aktif hastalık göstergesi. Her 3 ayda idrar proteinüri/kreatinin oranı</div>
+<div class="info-box"><strong>APSGN vs SLE Nefriti:</strong> APSGN → C3↓, C4 NORMAL (alternatif yol). SLE → C3 VE C4 birlikte↓ (klasik yol aktive). C3 &gt;8 hf düşük → MPGN veya SLE!</div>
+<h4 class="h-section">🔎 Kalıtımsal Nefritler</h4>
+<ul>
+<li><strong>Alport Sendromu:</strong> COL4A5 mutasyonu (X-linked, erkek ağır). Hematüri + sağırlık (sensörinöral) + göz (lentikonus). Böbrek biyopsi: basket-weave görünüm. ESRD → nakil</li>
+<li><strong>İnce Bazal Membran Nefropatisi (Ailevi Hematüri):</strong> İzole mikroskopik hematüri, iyi huylu, aile öyküsü. Normal işitme, biyopsi ayırt eder</li>
+<li><strong>IgA Nefropatisi:</strong> Makroskopik hematüri + ÜSYE eş zamanlı (APSGN'de 1-3 hf gecikmeli). Sık tekrarlayan. Tan: renal biyopsi</li>
+</ul>
+<h4 class="h-section">⚕️ Nefrotik Sendrom — Yaklaşım</h4>
+<ul>
+<li>Tanı: Proteinüri &gt;40 mg/m²/saat + hipoalbüminemi + ödem</li>
+<li>Minimal Change (EN SIK çocukta, %80): Steroid yanıtlı (%90)</li>
+<li>Steroid başlamadan önce: TÜBERKÜLİN TESTİ YAP! (immünosüpresyon → TB aktivasyonu)</li>
+<li>Prednizolon: <strong>2 mg/kg/gün</strong> (max 60 mg/gün) × 4-6 hafta → sonra aralıklı</li>
+<li>Steroid dirençli → Focal segmental glomerüloskleroz (FSGS) → nefroloji sevk</li>
+</ul>
+`},{id:17,cat:'noro',priority:2,title:'GBS vs Transvers Miyelit',tags:'GBS,transvers,miyelit,BOS,albümin,IVIG,paralizi,albüminosistolojik',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>GBS</th><th>Transvers Miyelit</th></tr></thead>
+<tbody>
+<tr><td>Patoloji</td><td>PERİFERİK sinir demiyelinizasyonu</td><td>OMURİLİK inflamasyonu</td></tr>
+<tr><td>Paralizi</td><td>ASSENDAN (ayaklardan başlar)</td><td>Belirli seviyenin ALTINDA</td></tr>
+<tr><td><strong>Duyu (EN ÖNEMLİ)</strong></td><td>Eldiven-çorap parestezi, NET SEVİYE YOK</td><td><strong>SEVİYE VEREN DUYU KAYBI!</strong> (Sevim eksi verir!)</td></tr>
+<tr><td>DTR</td><td>AREFLEKSİ (refleks arkı bozuk)</td><td>Başta arefleksi → sonra HİPERREFLEKSİ</td></tr>
+<tr><td>Otonom</td><td>Taşikardi/aritmi/TA dalgalanması</td><td>MESANE/BARSAK disfonksiyonu</td></tr>
+<tr><td><strong>BOS</strong></td><td><strong>ALBÜMİNOSİTOLOJİK DİSSOSİASYON</strong> (protein↑, hücre NORMAL) — patognomik!</td><td>Pleositoz (lenfosit↑) + protein↑</td></tr>
+<tr><td>MR</td><td>Sinir köklerinde kontrast tutulum</td><td>T2 hiperintens, ≥2 vertebra</td></tr>
+<tr><td>Tedavi</td><td>IVIG 0.4 g/kg/gün ×5 gün VEYA plazmaferez</td><td>IV Metilprednizolon 20-30 mg/kg ×3-5 gün</td></tr>
+<tr><td>Solunum</td><td>DİAFRAGMA TUTULUMU RİSKİ! → YBÜ</td><td>Üst servikal değilse korunur</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">GBS'de BOS'ta albüminosistolojik dissosiasyon patognomiktir. TM'de seviye veren duyu kaybı ve mesane disfonksiyonu vardır.</div>
+`},{id:18,cat:'nefro',priority:2,title:'İYE + Antibiyotik Profilaksisi + VUR',tags:'İYE,VUR,VCUG,DMSA,profilaksi,posterior üretral valv,idrar analizi',content:`
+<p><strong>Akut Tedavi:</strong> Gram(-) basil → Ağır İYE: 3. kuşak sefalosporin IV. Hafif: oral sefdinir/sefpodoksim. Süre: 7-14 gün.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Tetkik</th><th>Ne Zaman</th><th>Ne Gösterir</th></tr></thead>
+<tbody>
+<tr><td>Renal USG</td><td>İlk İYE'de herkese (tedavi sırasında)</td><td>Hidronefröz, böbrek boyutu</td></tr>
+<tr><td>VCUG</td><td>&lt;2 yaş, erkek, tekrarlayan, hidronefröz — enfeksiyon bittikten 4-6 HF SONRA</td><td>VUR grade 1-5</td></tr>
+<tr><td>DMSA sintigrafi</td><td>VUR saptanmış, tekrarlayan İYE — akut fazdan 4-6 AY SONRA</td><td>Renal skar</td></tr>
+</tbody>
+</table></div>
+<p><strong>Antibiyotik profilaksi:</strong> 1. kuşak sefalosporin (sefaleksin) veya trimetoprim. TEDAVİ DOZUNUN 1/3-1/4'ü, <strong>GECE YATMADAN ÖNCE TEK DOZ</strong>.</p>
+<p><strong>VUR:</strong> Grade 1-3: %80 spontan düzelir → profilaksi. Grade 4-5 → CERRAHİ.</p>
+<div class="pearl">Posterior Üretral Valv (Elif Bahat!): Erkek süt çocuğu, "kesik kesik idrar", bilateral hidronefröz. VCUG: posterior üretra dilatasyonu. ACİL endoskopik ablasyon.</div>
+<p><strong>İdrar Analizi:</strong></p>
+<ul>
+<li>Nitrit(+) → Gram(-) bakteri</li>
+<li>Lökosit esteraz(+) → İYE işareti</li>
+<li>Anlamlı üreme: Suprapubik→herhangi üreme; Kateter→&gt;10⁴; Orta akım→Gram(-) &gt;10⁵, <strong>Gram(+) &gt;2×10⁴</strong></li>
+<div class="warn">Fevziye hoca: "Gram negatif sondayla alınanda, suprapubik alınanda, gram pozitif orta akımda eşik değerleri nedir?" diye sormuş. Gram(+) için <strong>2×10⁴</strong> eşiği bilinmiyordu → puan gitti!</div>
+</ul>
+`},{id:19,cat:'nefro',priority:1,title:'Oligüri + ABY — Prerenal/Renal/Postrenal',tags:'oligüri,ABY,ATN,FENa,prerenal,renal,postrenal,hiperpotasemi',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Parametre</th><th>Prerenal</th><th>Renal (ATN)</th><th>Postrenal</th></tr></thead>
+<tbody>
+<tr><td>BUN/Cr</td><td>&gt;20</td><td>&lt;20</td><td>Değişken</td></tr>
+<tr><td>FENa</td><td>&lt;%1 (tübül sağlam)</td><td>&gt;%2 (tübül hasarlı)</td><td>Değişken</td></tr>
+<tr><td><strong>İdrar dansitesi</strong></td><td>&gt;1.020 (konsantre)</td><td>~1.010 (izostenüri)</td><td>Değişken</td></tr>
+<tr><td>İdrar Na</td><td>&lt;20 mEq/L</td><td>&gt;40 mEq/L</td><td>Değişken</td></tr>
+<tr><td>Sediment</td><td>Normal/hyalin silindir</td><td>Muddy brown granüler silindir</td><td>Normal</td></tr>
+<tr><td>USG</td><td>Normal</td><td>Normal/büyük böbrek</td><td>BİLATERAL HİDRONEFROZ</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">Prerenal'de böbrek sağlam → idrarı konsantre eder (&gt;1.020). Renal hasarda tübüller çalışmaz → seyreltik (~1.010)</div>
+<p><strong>Hiperpotasemi Tedavi Sırası (Embiya mekanizma soruyor!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li><strong>Ca Glukonat 0.5-1 mL/kg IV YAVAŞ</strong> → K⁺ DÜŞÜRMEZ, kalp zarını stabilize eder → KARDİYOPROTEKTİF (EN HIZLI!)</li>
+<li>İnsülin 0.1 Ü/kg + %10 Dex 5 mL/kg → Na-K ATPaz aktive → K⁺ HÜCRE İÇİNE</li>
+<li>Salbutamol 0.15 mg/kg nebül → β2 → Na-K ATPaz → K⁺ HÜCRE İÇİNE (insülinle sinerjik!)</li>
+<li>NaHCO₃ 1-2 mEq/kg → asidoz düzelir → K⁺ HÜCRE İÇİNE</li>
+<li>Kayexalate 1 g/kg → GİS'ten K⁺ bağlar → VÜCUTTAN UZAKLAŞTIRIR</li>
+</ol>
+<p><strong>EKG İlerlemesi:</strong> Sivri T → PR uzama → P kaybolur → QRS genişler → sinüzoidal dalga → VF/asistoli</p>
+`},{id:20,cat:'nefro',priority:1,title:'HÜS + Bartter/Gitelman + Enürezis',tags:'HÜS,Bartter,Gitelman,enürezis,alarm,desmopressin,imipramin,E.coli',content:`
+<p><strong>HÜS Triadı:</strong> ①Mikroanjiopatik hemolitik anemi ②Trombositopeni ③Akut böbrek hasarı</p>
+<p>En sık neden: E.coli O157:H7 Shiga toksin. Kanlı ishalden 5-10 gün sonra.</p>
+<div class="warn">Antibiyotik VERMEYİN! (toksin salınımı↑). Trombosit transfüzyonu KONTRENDİKE!</div>
+<h4 class="h-section">🔎 HÜS Klinik + Lab</h4>
+<ul>
+<li>Kanlı ishal → 5-10 gün sonra triad başlar</li>
+<li>Pletore (hemoliz), oligüri, peteşi</li>
+<li>Lab: Hb↓ + fragmantositler/sferositler + Plt↓ + Kreatinin↑ + LDH↑ + Direkt Coombs NEGATİF</li>
+<li>Direkt Coombs NEGATİF → non-immün hemoliz (AIHA'dan farkı!)</li>
+</ul>
+<h4 class="h-section">💊 HÜS Tedavisi</h4>
+<ul>
+<li>Destek: Sıvı dengesi, antihipertansif (ACE inhibitörü KONTRENDİKE — renin bağımlı HT!), transfüzyon (Hb&lt;7 veya semptomatik)</li>
+<li>Diyaliz: Oligüri/anüri + hiperkalemi/asidoz → %50 hastada gerekli</li>
+<li>Trombosit transfüzyonu: <strong>KONTRENDİKE</strong> (mikrovasküler tromboz artarır!)</li>
+<li>Antibiyotik: <strong>KONTRENDİKE</strong> (Stx salınımı artar → hasarı kötüleştirir)</li>
+</ul>
+<div class="info-box"><strong>TTP vs HÜS:</strong> TTP erişkinde, ateş + nörolojik semptom + ADAMTS13 eksikliği. Çocukta HÜS daha sık, renal baskın</div>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Bartter</th><th>Gitelman</th></tr></thead>
+<tbody>
+<tr><td>Tübül defekti</td><td>Henle kulpu</td><td>Distal tübül</td></tr>
+<tr><td>Benzetme</td><td>Furosemid benzeri</td><td>Tiazid benzeri</td></tr>
+<tr><td>Kalsiyum</td><td>HİPERKALSİÜRİ + nefrokalsinoz</td><td>HİPOKALSİÜRİ + hipomagnezemi</td></tr>
+<tr><td>Ortak</td><td colspan="2">Hipokalemi + metabolik alkaloz + hipokloremi + TA NORMAL</td></tr>
+</tbody>
+</table></div>
+<p><strong>Enürezis:</strong> ≥5 yaş, ayda ≥2 kez. Primer (hiç kuru kalmamış) vs Sekonder (6 ay kuru→tekrar)</p>
+<p><em>Önce organik dışla:</em> İYE, DM, Dİ, spinal anomali, konstipasyon!</p>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li>Davranışsal: Akşam sıvı kısıtla, uyumadan iştirt, motivasyonel takvim</li>
+<li><strong>Alarm tedavisi (1. TERCİH!):</strong> Nem sensörü. 2-3 ay. %65-75 başarı, en etkili uzun vadeli</li>
+<li>Desmopressin: 0.2-0.4 mg oral gece. <em>Hızlı etki ama kesilince RELAPS %60-70! SU KISITLAMASI ŞART!</em></li>
+<li>İmipramin: Kardiyotoksik! Doz aşımında LETAL. EKG takibi gerekli</li>
+</ul>
+`},{id:21,cat:'yd',priority:3,title:'YD Sarılığı — Rh/ABO + Kernikterus + Uzamış',tags:'sarılık,Rh,ABO,kernikterus,fototerapi,exchange,bilirubin,bilyer atrezi',content:`
+<p><strong>Patolojik Sarılık Kriterleri:</strong></p>
+<ul>
+<li>İlk 24 saatte başlama</li><li>TB &gt;12 (term) / 10 (prematüre)</li>
+<li>Günlük artış &gt;5 mg/dL</li><li>Direkt bilirubin &gt;2 mg/dL veya total &gt;%20</li><li>2 haftadan uzun süre</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Rh Uyuşmazlığı</th><th>ABO Uyuşmazlığı</th></tr></thead>
+<tbody>
+<tr><td>Şiddet</td><td>AĞIR (hydrops fetalis)</td><td>Genelde hafif-orta</td></tr>
+<tr><td>Coombs</td><td>Kuvvetli pozitif</td><td>Zayıf pozitif veya negatif</td></tr>
+<tr><td>İlk gebelik</td><td>Genelde etkilenmez (sensitizasyon lazım)</td><td>İLK gebelikte olabilir!</td></tr>
+</tbody>
+</table></div>
+<p><strong>Kernikterus Kronik:</strong> ①Atetoid (diskinetik) serebral palsi ②Sensorinöral işitme kaybı ③Yukarı bakış paralizisi ④Diş mine displazisi</p>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li>Fototerapi: Mavi ışık (420-490 nm) → lumirubin → böbrek+safra. Gözler korunmalı, 30-50 cm mesafe</li>
+<li>Exchange: Fototerapi aşıldı, hızla yükseliyor → 2 kat kan volümü (170 mL/kg)</li>
+<li>IVIG: İmmün hemolitik sarılıkta 0.5-1 g/kg IV</li>
+</ul>
+<p><strong>Uzamış Sarılık (&gt;2 hf):</strong></p>
+<ul>
+<li>İNDİREKT yüksek: Anne sütü sarılığı (EN SIK, 3. ayda düzelir), konjenital hipotiroidi, Gilbert</li>
+<li><strong>DİREKT yüksek: BİLİYER ATREZİ (EN TEHLİKELİ!)</strong> — Akolik gaita + koyu idrar. Kasai &lt;60 günde!</li>
+</ul>
+`},{id:22,cat:'yd',priority:3,title:'YD Baş Travmaları',tags:'kaput,sefal,subgaleal,sütür,kanama,periost',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Kaput</th><th>Sefalhematom</th><th>Subgaleal</th></tr></thead>
+<tbody>
+<tr><td>Tabaka</td><td>Deri altı</td><td>Periost altı</td><td>Galea altı</td></tr>
+<tr><td><strong>Sütürler</strong></td><td><strong>GEÇER</strong></td><td><strong>SÜTÜRLERDE DURUR!</strong></td><td>Geçer</td></tr>
+<tr><td>Görünüm</td><td>Yaygın/hamursu/pitting</td><td>Sert/sınırlı/flüktüan</td><td>Dalgalı/geniş/<strong>PROGRESİF!</strong></td></tr>
+<tr><td>Hemogram</td><td>Minimal</td><td>Hafif sarılık</td><td><strong>MASİF ANEMİ + HİPOVOLEMİK ŞOK!</strong></td></tr>
+<tr><td>Tedavi</td><td>Günlerde geçer</td><td>Haftalarda, kalsifikasyon olabilir</td><td><strong>ACİL! (kan transfüzyonu)</strong></td></tr>
+</tbody>
+</table></div>
+<div class="pearl">Subgaleal neden tehlikeli? Galea altı boşluk çok geniş → 260 mL'ye kadar kan → 3 kg bebeğin total kan volümü ~240 mL → masif kanama → şok!</div>
+<p><strong>Ezber:</strong> Kaput=geniş/sütür GEÇER/zararsız | Sefal=sınırlı/<strong>SÜTÜRDE DURUR</strong>/sert | Subgaleal=geniş/HAYATI TEHDİT</p>
+`},{id:23,cat:'yd',priority:2,title:'YD Taramaları',tags:'topuk,tarama,FKÜ,hipotiroidi,KAH,biyotinidaz,GKD,ROP,işitme,SMA',content:`
+<p><strong>Topuk Kanı 6 Hastalık:</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Fenilketonüri (FKÜ): Fenilalanin düzeyi → düşük fenilalanin diyeti</li>
+<li>Konjenital Hipotiroidi: <strong>TSH bakılır!</strong> (santral hipotiroidi TSH ile KAÇIRILIR → sT4 de bak)</li>
+<li>Biyotinidaz eksikliği → biyotin tedavisi</li>
+<li>Kistik Fibrozis: IRT → yüksekse ter testi ile doğrula</li>
+<li>KAH: 17-OHP. <em>Prematürede yalancı pozitiflik sık!</em></li>
+<li>Hemoglobinopatiler: Hb elektroforezi</li>
+</ol>
+<p><strong>Zamanlama:</strong> 48-72 saat sonra (beslenme başlamış olmalı). Prematürede 7. günde tekrar. SMA için ilk 48 saatte ayrı örnek!</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Tarama</th><th>Zamanlama</th><th>Yöntem / Risk Faktörleri</th></tr></thead>
+<tbody>
+<tr><td>İşitme</td><td>İlk 1 ayda</td><td>OAE → risk varsa ABR. Risk (10): prematürite, hiperbilirübinemi, menenjit, ototoksik ilaç, aile öyküsü, kraniofasiyal anomali, &lt;1500g, mekanik ventilasyon &gt;5 gün, TORCH, asfiksi</td></tr>
+<tr><td>Görme</td><td>İlk 1 ayda</td><td>Kırmızı refle → katarakt, retinoblastom, glokom</td></tr>
+<tr><td>ROP</td><td>Postnatal 4-6. hf</td><td>≤32 hf VEYA ≤1500 g</td></tr>
+<tr><td>GKD</td><td>USG: 4-6. hf</td><td>Risk: kız, makat, aile öyküsü, oligohidramnios. Barlow+Ortolani+Galeazzi</td></tr>
+<tr><td>Konjenital KH</td><td>İlk gün</td><td>Pulse oksimetri → postduktal &lt;%95 veya pre-post fark &gt;%3 → EKO!</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">👂 İşitme Taraması — 10 Risk Faktörü (Embiya 10 tane istiyor!)</h4>
+<ol class="content" style="padding-left:18px">
+<li>Prematürite (&lt;32 hafta)</li>
+<li>Hiperbilirübinemi (exchange transfüzyon gerektiren düzey)</li>
+<li>Menenjit / ensefalit öyküsü</li>
+<li>Ototoksik ilaç maruziyeti (gentamisin, furosemid)</li>
+<li>Ailede konjenital işitme kaybı öyküsü</li>
+<li>Kraniofasiyal anomali (kulak-yüz anomalisi)</li>
+<li>Düşük doğum ağırlığı (&lt;1500 g)</li>
+<li>Mekanik ventilasyon &gt;5 gün</li>
+<li>TORCH enfeksiyonu (CMV, rubella, sifilis)</li>
+<li>Perinatal asfiksi (HIE)</li>
+</ol>
+<div class="info-box">İlk tarama: <strong>OAE (Otoacoustic Emissions)</strong> — hızlı, kolay, tüm YD'a. Risk grubu veya OAE geçemeyenler → <strong>ABR (Auditory Brainstem Response)</strong>. İlk 1 ayda yapılmalı.</div>
+
+<h4 class="h-section">🦴 GKD Taraması — Risk Faktörleri + Muayene</h4>
+<p><strong>Risk Faktörleri (6):</strong></p>
+<ul>
+<li>GKD'li birinci derece akraba (kardeş/ebeveyn)</li>
+<li>İlk kız çocuk (ligamentöz laksitiye yatkın)</li>
+<li>Makat prezentasyon</li>
+<li>Oligohidramnios</li>
+<li>Makrozomi</li>
+<li>Ayak deformitesi (pes ekinovarus)</li>
+</ul>
+<p><strong>Muayene:</strong></p>
+<ul>
+<li><strong>Barlow testi:</strong> Kalça fleksiyonda, addüksiyonda baskı → kalça yerinden çıkıyor mu? (kışkırtma testi)</li>
+<li><strong>Ortolani testi:</strong> Abdüksiyon sırasında "klik" sesi → yerinden çıkmış kalçayı yerine getirme</li>
+<li><strong>Galeazzi testi:</strong> Supin, kalça+diz 90° → diz yükseklikleri farklıysa asimetri = patolojik</li>
+<li>Pili asimetrisi (uyluk pilileri eşit değilse)</li>
+</ul>
+<div class="info-box">Tarama zamanı: <strong>4-6. haftada USG</strong> (kemikleşme tamamlanmamış, USG üstün). Beklenirse: Grafi (4-6 aydan sonra kemikleşince).</div>
+
+<h4 class="h-section">❤️ Konjenital Kalp Hastalığı Taraması</h4>
+<ul>
+<li>Yöntem: <strong>Pulse oksimetre</strong> (postduktal = sağ el + ayak)</li>
+<li>Zamanlama: Doğumdan 24-48 saat sonra (duktal kapanma sonrası)</li>
+<li><strong>Pozitif kriter:</strong> Postduktal SpO₂ &lt;%95 VEYA Pre-postduktal fark &gt;%3 → EKO!</li>
+</ul>
+
+<h4 class="h-section">🩸 Topuk Kanı — Eşik Değerler</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Hastalık</th><th>Ne Ölçülür</th><th>Eşik/Pozitif</th></tr></thead>
+<tbody>
+<tr><td>Konjenital Hipotiroidi</td><td>TSH</td><td>&gt;10 mIU/L → ileri merkeze. &gt;40 → tedavi başla</td></tr>
+<tr><td>FKÜ</td><td>Fenilalanin</td><td>&gt;120 μmol/L</td></tr>
+<tr><td>KAH</td><td>17-OHP</td><td>Gestasyon yaşına göre; prematürede yalancı pozitif sık!</td></tr>
+<tr><td>Biyotinidaz</td><td>Biyotinidaz aktivitesi</td><td>&lt;%30 aktivite</td></tr>
+<tr><td>Kistik Fibrozis</td><td>IRT (immünoreaktif tripsinojen)</td><td>Yüksek → ter testi doğrulama</td></tr>
+<tr><td>SMA</td><td>SMN1 geni (MLPA)</td><td>Delesyon var → teyit testi</td></tr>
+</tbody>
+</table></div>
+<div class="info-box"><strong>Konjenital hipotiroidi tarama algoritması (Filiz hoca soruyor!):</strong><br>
+Topuk kanı TSH → Ara değer (4-10 mIU/L): 2-4 hf içinde tekrar çağır → &gt;10: ileri merkeze gönder → İleri merkezde: <strong>Serum TSH + sT4 ölçülür</strong> (santral hipotiroidi TSH normal/düşük olabilir, sT4 de bakılmalı!)</div>
+<div class="warn">SMA taraması: İlk <strong>48 saatte</strong> ayrı örnek! Pudralı eldiven kullanma (DNA bozar) → pudrasız veya iki kat poşet eldiven. Örnekleri üst üste koyma, kilitli poşette sakla.</div>
+`},{id:24,cat:'yd',priority:2,title:'Pleksus Brakialis — Erb/Klumpke',tags:'pleksus,Erb,Klumpke,Horner,doğum,paralizi,frenik',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Tip</th><th>Kök</th><th>Pozisyon</th><th>Kayıp Refleks</th><th>Korunan</th></tr></thead>
+<tbody>
+<tr><td><strong>Erb-Duchenne (%90)</strong></td><td>C5-C6</td><td>"Bahşiş pozisyonu": Omuz addüksiyon+iç rotasyon, dirsek ekstansiyon, ön kol pronasyon</td><td>Moro(-), biseps(-), radyal(-)</td><td>Bilek fleksiyonu+yakalama</td></tr>
+<tr><td><strong>Klumpke (nadir)</strong></td><td>C8-T1</td><td>"Pençe el": Bilek düşüklüğü, parmak fleksörleri zayıf</td><td>Yakalama(-)</td><td>Omuz+dirsek</td></tr>
+<tr><td>Total</td><td>C5-T1</td><td>Tüm kol felci, flask paralizi</td><td>Hepsi(-)</td><td>—</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">Klumpke + HORNER (MUTLAKA SÖYLE!): T1 kök hasarı → sempatik zincir → miyozis + pitozis + enoftalmus + anhidroz</div>
+<p><strong>Frenik Sinir Felci:</strong> C3-C5 → diyafram paralizisi → solunum sıkıntısı. Paradoks karın hareketi. Grafide diyafram yüksek.</p>
+<p><strong>Prognoz:</strong> Erb %90 spontan. Klumpke/total kötü prognoz. Tedavi: 2 hf immobilizasyon → pasif egzersiz → 3-6 ay yoksa cerrahi</p>
+<h4 class="h-section">🦾 Tip Detayları — Sınav İçin Kritik</h4>
+<ul>
+<li><strong>Erb-Duchenne (C5-C6):</strong> Kolda adduksiyon+iç rotasyon+pronasyon = <em>"garson bahşiş"</em> pozisyonu
+  <ul>
+    <li>Kayıp refleksler: Biseps ↓, Moro asimetrik/yok!</li>
+    <li><strong>PARMAKLAR: Korunmuş</strong> (kavrama normal)</li>
+    <li>En sık (%90)!</li>
+  </ul>
+</li>
+<li><strong>Klumpke (C8-T1):</strong> El parmakları tutulur → kavrama yok
+  <ul>
+    <li><strong>Horner sendromu görülebilir!</strong> (T1 → ptosis, miyozis, anhidroz)</li>
+    <li>Nadir (%1)</li>
+  </ul>
+</li>
+<li><strong>Mix Tip (C5-T1):</strong> Tam paralizi</li>
+<li><strong>Klavikula kırığı:</strong> Ayırıcı tanıda düşün (krepitasyon, sınırlı hareket, grafi ile tanı)</li>
+<li><strong>Tanı:</strong> Klinik. <strong>Tedavi:</strong> Fizyoterapi, 3-6 ayda iyileşme beklenir</li>
+</ul>
+<div class="info-box"><strong>Ali Cansu + Gül Şalcı:</strong> En sık ERB DUCHENNE. Klumpke'de HORNER SENDROMU söylemeyi unutma!</div>
+`},{id:25,cat:'yd',priority:1,title:'Prematüre Sorunları — NEK/ROP/PDA/BPD/İVK',tags:'prematüre,NEK,PDA,BPD,RDS,surfaktan,kafein,pnömatosis,pneumoperitoneum',content:`
+<p><strong>PDA:</strong> Bounding pulse (sıçrayıcı nabız), geniş nabız basıncı, SÜREKLİ (machinery) üfürüm.</p>
+<p>Tedavi: İbuprofen veya İndometazin (COX inhibitörü). Kontrendike: trombositopeni, kanama, NEK, renal yetmezlik.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>NEK Evresi</th><th>Klinik</th><th>Radyoloji</th><th>Tedavi</th></tr></thead>
+<tbody>
+<tr><td>Evre 1 (Şüpheli)</td><td>Beslenme intoleransı, distansiyon</td><td>Normal</td><td>Oral kes, IV sıvı, AB, NG dekompresyon</td></tr>
+<tr><td>Evre 2 (Kesin)</td><td>Kanlı gaita</td><td><strong>PNÖMATOSİS İNTESTİNALİS!</strong></td><td>Aynı + izlem</td></tr>
+<tr><td>Evre 3 (İleri)</td><td>Şok, peritonit</td><td><strong>PNÖMOPERİTONEUM → ACİL CERRAHİ!</strong></td><td>ACİL cerrahi</td></tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>AB:</strong> Ampisilin + Gentamisin + Metronidazol</li>
+<li><strong>Koruma:</strong> Anne sütü (en önemli!), probiyotikler</li>
+<li><strong>RDS:</strong> Buzlu cam + hava bronkogramı → Surfaktan intratrakeal, CPAP. Antenatal steroid: 24-34 hf → betametazon</li>
+<li><strong>BPD:</strong> &gt;28 gün O₂ ihtiyacı. Risk: prematürite + mekanik ventilasyon</li>
+<li><strong>Prematüre Apnesi:</strong> ≥20 sn → KAFEİN SİTRAT yükleme 20 mg/kg → idame 5 mg/kg/gün</li>
+<li><strong>İVK:</strong> &lt;32 hf, germinal matriks kanaması. Grade 3-4 → hidrosefali riski</li>
+</ul>
+<h4 class="h-section">📋 Ballard Skorlaması — Gestasyonel Yaş Tayini</h4>
+<ul>
+<li><strong>Amaç:</strong> Prematürenin gestasyonel yaşını klinik olarak belirlemek</li>
+<li><strong>Nöromüsküler kriterler (6):</strong> Postür, bilek fleksiyon açısı, kol geri çekme, popliteal açı, eşarp belirtisi, topuk-kulak</li>
+<li><strong>Fiziksel kriterler (6):</strong> Deri, lanugo, planta yüzeyi, meme, göz/kulak, genital</li>
+<li>Toplam puan → gestasyonel hafta tahmin edilir</li>
+<li><strong>Yeni Ballard:</strong> Erken prematüreye (24-26 hf) daha uygun; daha geniş aralıkta geçerli</li>
+</ul>
+`},{id:26,cat:'yd',priority:1,title:'SGA Bebek ve Polisitemi',tags:'SGA,polisitemi,Hct,exchange,TORCH,plasental',content:`
+<p><strong>SGA:</strong> Doğum ağırlığı &lt;10. persentil.</p>
+<ul>
+<li>Simetrik (erken → TORCH, tüm boyutlar küçük) vs Asimetrik (geç → plasental yetmezlik, baş korunmuş)</li>
+<li>Komplikasyonlar: <strong>HİPOGLİSEMİ(!), hipotermi, polisitemi, hipokalsemi</strong></li>
+</ul>
+<p><strong>SGA Komplikasyonları (Detay):</strong></p>
+<ul>
+<li><strong>Hipoglisemi:</strong> 0-6 saatte topuktan KŞ bakılmalı! Hedef KŞ &gt;45 mg/dL</li>
+<li><strong>Polisitemi:</strong> Venöz Hct &gt;%65. Belirtiler: Pletore, uyuşukluk, nöbet, taşikardi
+  <ul>
+    <li>Asemptomatik + Hct %65-70 → İzlem</li>
+    <li>Semptomatik VEYA Hct &gt;%70 → Parsiyel exchange (SF ile, hedef Hct %50-55)</li>
+  </ul>
+</li>
+</ul>
+<p><strong>TORCH Enfeksiyonlar (Simetrik SGA nedeni):</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Etken</th><th>Spesifik Bulgu</th></tr></thead>
+<tbody>
+<tr><td><strong>Toksoplazmoz</strong></td><td>İntrakranial kalsifikasyon (bazal ganglion), korioretinit</td></tr>
+<tr><td><strong>Rubella</strong></td><td>Katarakt, KKH (PDA), sağırlık</td></tr>
+<tr><td><strong>CMV</strong> (en sık konjenital!)</td><td>Periventriküler kalsifikasyon, mikrosefali, sağırlık</td></tr>
+<tr><td><strong>HSV</strong></td><td>Hepatit, DIC, ensefalit</td></tr>
+<tr><td><strong>Sifilis</strong></td><td>"Kemik ağrısı", burun akıntısı (snuffles)</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">SGA vs Premature Ayrımı: Gestasyon yaşına bak! SGA term olabilir.</div>
+`},{id:27,cat:'yd',priority:3,title:'YD Sepsisi — Erken/Geç + Tedavi',tags:'sepsis,ampisilin,gentamisin,IT oranı,CRP,Listeria,GBS,E.coli',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Erken (&lt;72 sa)</th><th>Geç (&gt;72 sa)</th></tr></thead>
+<tbody>
+<tr><td>Bulaş</td><td>Vertikal (doğum kanalı)</td><td>Horizontal (çevre)</td></tr>
+<tr><td>Risk</td><td>PPROM&gt;18sa, maternal ateş, GBS(+), koryoamniyonit</td><td>Prematürite, kateter, uzun yatış</td></tr>
+<tr><td>Etken</td><td>GBS (en sık!), E.coli, Listeria</td><td>S.aureus, CoNS, Gram(-), Kandida</td></tr>
+<tr><td><strong>Tedavi</strong></td><td><strong>AMPİSİLİN + GENTAMİSİN</strong></td><td><strong>AMPİSİLİN + SEFOTAKSİM</strong></td></tr>
+</tbody>
+</table></div>
+<div class="pearl">Ampisilin neden her ikisinde de var? → LİSTERİA MONOSİTOGENES için! Listeria'ya sefotaksim+gentamisin ETKİSİZDİR!</div>
+<p><strong>Tetkikler:</strong></p>
+<ul>
+<li>Kan kültürü: ALTIN STANDART, antibiyotik ÖNCE al</li>
+<li>Hemogram+PY: I/T oranı &gt;0.16 (ilk hf) / &gt;0.2 (sonra). Toksik granülasyon, vakuolizasyon</li>
+<li>CRP &gt;1 mg/dL, Prokalsitonin &gt;2 ng/mL</li>
+<li>LP: Menenjit dışla!</li>
+<li>Hiperglisemi de görülebilir (stres yanıtı!)</li>
+</ul>
+<p><strong>YD sepsis öntanıları:</strong> Sepsis, İYE, Menenjit, Pnömoni, Dehidratasyon, Fazla sarmalama, Metabolik hastalık (galaktozemi, organik asidemi)</p>
+`},{id:28,cat:'yd',priority:2,title:'YD Konvülsiyonları',tags:'YD,konvülsiyon,ionize kalsiyum,fenobarbital,subtle,KAH',content:`
+<p><strong>Subtle Nöbet Tipleri (5 tip, EZBERLE!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Oral-bukkal-lingual hareketler (çiğneme, yalama, emme)</li>
+<li>Göz deviyasyonu veya kırpma (ritmik, amaçsız)</li>
+<li>Apne + bradikardi (konvülsif apne)</li>
+<li>Pedal çevirme (bisiklet hareketi)</li>
+<li>Yüzme hareketi</li>
+</ol>
+<p><strong>Tedavi:</strong> ABC → damar yolu → <strong>TOPUKTAN KŞ</strong> (YD'da topuktan!) → KŞ&lt;50 → %10 Dex 2 mL/kg IV → 8 mg/kg/dk idame</p>
+<div class="warn">Yakup hoca: "Kalsiyum bakılır" DİYEMEZSİN → "İYONİZE KALSIYUM bakılır" de! Düşükse %10 Ca Glukonat 2 mL/kg IV YAVAŞ</div>
+<p><strong>Antikonvülsif Endikasyonları (4 MADDE!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>1 saatte 3'ten FAZLA nöbet</li>
+<li>1 nöbet 5 dakikadan UZUN</li>
+<li>Kardiyorespiratuvar bozulma</li>
+<li>Klinik veya EEG ile kanıtlanmış devam eden nöbet</li>
+</ol>
+<p>İlaç: Fenobarbital 20 mg/kg IV yükleme (max total 40 mg/kg)</p>
+<div class="pearl">KRİTİK: Na↓ + K↑ + Hipoglisemi birlikte → KAH (Böbrek Üstü Bezi Yetmezliği) düşün! Aldosteron + kortizol eksikliği</div>
+<h4 class="h-section">⚡ BÖBREK ÜSTÜ BEZİ YETMEZLİĞİ (Yakup Hoca BIRAKIRIM diyor!)</h4>
+<div class="danger-box"><strong>KRİTİK:</strong> YD'da hem HİPONATREMİ hem HİPERKALEMİ hem de HİPOGLİSEMİ birlikte → KAH (Böbrek Üstü Bezi Yetmezliği)! Bu üç elektrolitin birlikte etkilenmesi = aldosteron + kortizol yetersizliği.<br>
+Yakup hoca: "Bunu söylemeyene yardım etmem!" diyor.</div>
+<p><strong>YD Konvülziyonu Yaklaşımı (Yakup Hoca Adım Adım İstiyor):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>ABC → Damar yolu aç → IV sıvı</li>
+<li><strong>TOPUKTAN KŞ ölç</strong> (YD'da topuktan!) → KŞ&lt;40-45 → %10 Dex 2 mL/kg IV bolus</li>
+<li>Kan tetkiki: Elektrolitler (Na, K, Ca, Mg, P → hepsini ayrı ayrı say!), KŞ, kan gazı</li>
+<li>Hipokalsemi → <strong>Kan gazından İYONİZE Ca bak!</strong> (total Ca sonucu bekleyemeyiz, uzun sürer)</li>
+<li>Eğer Hipokalsemi: %10 Ca Glukonat 2 mL/kg IV YAVAŞ</li>
+<li>Hem Na↓ hem K↑ hem glukoz↓ → KAH düşün → hidrokortizon!</li>
+<li>Ateş/SSS enfeksiyonu şüphesi → kültürler al → AB başla</li>
+<li>Antikonvülsif endikasyonu var mı? (4 kriter - aşağıda)</li>
+</ol>
+<div class="info-box"><strong>Antikonvülsif Başlama Endikasyonu (4 madde — Yakup hoca slayttaki 4 maddeyi bekliyor!):</strong>
+<ol style="padding-left:18px;margin:4px 0">
+<li>1 saatte 3'ten fazla nöbet</li>
+<li>Tek nöbet 5 dakikadan uzun</li>
+<li>Kardiyorespiratuvar bozulma eşlik ediyor</li>
+<li>Klinik veya EEG ile kanıtlanmış devam eden nöbet</li>
+</ol>
+İlaç: Fenobarbital 20 mg/kg IV yükleme (max total 40 mg/kg)</div>
+`},{id:29,cat:'endokrin',priority:2,title:'KAH — 21-OH vs 11β-OH',tags:'KAH,adrenal,21OH,11OH,17OHP,virilizasyon,kriz,ambigüs',content:`
+<p><strong>Genel:</strong> Adrenal kortekste kortizol sentez enzim defekti. OR. En sık (%90-95): 21-hidroksilaz eksikliği.</p>
+<p><strong>Patogenez:</strong> Kortizol sentezlenemiyor → negatif feedback yok → ACTH↑ → adrenal korteks hiperplazisi → bloktan önceki ara ürünler ve androjenler aşırı üretilir.</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Enzim</th><th>21-OH</th><th>11β-OH</th></tr></thead>
+<tbody>
+<tr><td>Kortizol</td><td>↓</td><td>↓</td></tr>
+<tr><td>Aldosteron/DOC</td><td>Aldosteron↓</td><td>DOC↑ (mineralokortikoid!)</td></tr>
+<tr><td>Androjen</td><td>↑↑</td><td>↑</td></tr>
+<tr><td><strong>Tansiyon</strong></td><td>↓/normal</td><td><strong>↑ HİPERTANSİYON!</strong></td></tr>
+<tr><td>Lab</td><td>17-OHP↑↑</td><td>DOC↑, 11-deoksikortizol↑</td></tr>
+<tr><td>Klinik fark</td><td>Tuz kaybettiren form, virilizasyon</td><td>Virilizasyon + <strong>HİPERTANSİYON</strong></td></tr>
+</tbody>
+</table></div>
+<p><strong>Tuz kaybettiren form (%75, 21-OH):</strong> 1-2. hf → kusma, dehidratasyon, hiponatremi, HİPERKALEMİ, metabolik asidoz → ADRENAL KRİZ!</p>
+<p><strong>Tedavi:</strong> Hidrokortizon 10-15 mg/m²/gün (3 doz). Fludrokortizon (tuz kaybettirende). Kriz: IV SF bolus + IV hidrokortizon stres dozu (50-100 mg/m²) + hipoglisemi düzelt.</p>
+`},{id:30,cat:'endokrin',priority:2,title:'DKA — Tedavi + Beyin Ödemi',tags:'DKA,insülin,beyin ödemi,K+,KŞ,asidoz,ketonüri',content:`
+<p><strong>Tanı:</strong> KŞ&gt;200 + pH&lt;7.3 veya HCO₃&lt;15 + ketonüri/ketonemi.</p>
+<ul>
+<li>Hafif: pH 7.2-7.3 | Orta: 7.1-7.2 | Ağır: &lt;7.1</li>
+</ul>
+<p><strong>Tedavi:</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>IV SIVI: 10-20 mL/kg SF bolus → defisit+idame 24-48 saate yay</li>
+<li>Sıvıdan 1-2 SAAT SONRA insülin: Regular insülin <strong>0.05-0.1 Ü/kg/saat IV. ASLA BOLUS VERMEZ!</strong></li>
+<li>KŞ takibi: SAATLIK. Düşüş saatte &lt;%10 ve &lt;90 mg/dL olmamalı</li>
+<li>K+&lt;3.3 → <strong>İNSÜLİN BAŞLAMA,</strong> önce K+ replasmanı</li>
+<li>KŞ&lt;300 düşünce → sıvıya %5-10 Dex ekle → insülini KESME!</li>
+</ol>
+<p><strong>Beyin Ödemi (EN KORKULAN KOMPLİKASYON):</strong></p>
+<ul>
+<li>Mekanizma: KŞ ve Na hızla düşer → plazma osmolaritesi↓ → beyin hücreleri su çeker</li>
+<li>Bulgular: Baş ağrısı, bilinç değişikliği, kusma, Cushing triadı (bradikardi+HT+düzensiz solunum)</li>
+<li>Tedavi: Mannitol 0.5-1 g/kg IV veya %3 NaCl 2.5-5 mL/kg</li>
+</ul>
+<h4 class="h-section">💡 DKA — Sık Sorulan Detaylar</h4>
+<div class="info-box"><strong>Glukoz eşiği neden 200'e düştü?</strong> (Embiya hoca soruyor!)<br>
+Glukozüri böbrekte 200 mg/dL'de başlar. Bu değerin altında glukoz idrarla çıkamaz, ketonemi devam ediyorsa DKA olarak kabul edilir. Eski eşik 300 mg/dL'ydi, artık &gt;200 mg/dL DKA kriteridir.</div>
+<div class="info-box"><strong>Beyin ödemi önleme (Embiya hoca!):</strong><br>
+• Sıvıyı çok hızlı verme → yavaş yavaş (48 saate yay)<br>
+• KŞ düşüşü: saatte &lt;%10 ve &lt;90 mg/dL düşürme<br>
+• Düzeltilmiş Na izle: tedavi boyunca artmalı, azalıyorsa beyin ödemi!</div>
+`},{id:31,cat:'endokrin',priority:3,title:'Konjenital Hipotiroidi',tags:'hipotiroidi,TSH,levotiroksin,ektopik,tarama,guatr,makroglossi',content:`
+<p><strong>Etyoloji (Mukaddes, Gülay en az 5 neden!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Ektopik tiroid (EN SIK! ~%60): Lingual, sublingual, substernal</li>
+<li>Tiroid agenezisi/hipoplazisi (~%15)</li>
+<li>Dishormonogenez (~%15): TPO eksikliği en sık. <strong>GUATR EŞLİK EDEBİLİR!</strong></li>
+<li>Geçici: Maternal antikorlar, iyot eksikliği/fazlalığı, antitiroid ilaç</li>
+<li>Santral hipotiroidi: Hipofizer TSH eksikliği. <em>SADECE TSH bakılırsa KAÇIRILIR!</em> (TSH normal/düşük, sT4 düşük)</li>
+</ol>
+<p><strong>Klinik:</strong> Uzamış sarılık (EN ERKEN İPUCU!), beslenme güçlüğü, kabızlık, letarji, az ağlama, <strong>MakroGLOSSİ</strong>, göbek fıtığı, kaba boğuk ağlama, livedo retikülaris, geniş arka fontanel, büyüme geriliği, hipotoni. Tedavisiz → <em>KALICI MENTAL RETARDASYON</em></p>
+<p><strong>Tanı:</strong> TSH↑ + sT4↓ = primer hipotiroidi. USG → sintigrafi (Tc-99m).</p>
+<p><strong>Tedavi:</strong> Levotiroksin <strong>10-15 μg/kg/gün.</strong> Açkarnına, sabah, soya formülü/demir/kalsiyum ile VERME (emilim bozar). 3 yaşta deneme kesimi.</p>
+`},{id:32,cat:'endokrin',priority:2,title:'Graves / Hipertiroidi + Tiroid Fırtınası',tags:'Graves,Hashimoto,metimazol,TSI,propranolol,tiroid fırtınası,Lugol,ekzoftalmus',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Graves</th><th>Hashimoto</th></tr></thead>
+<tbody>
+<tr><td>TFT</td><td>TSH↓↓, sT3/sT4↑↑</td><td>TSH↑ (hipotiroidi)</td></tr>
+<tr><td>Antikorlar</td><td>TSI/TRAb(+) (TSH reseptörünü UYARIR!)</td><td>Anti-TPO(+), Anti-Tg(+)</td></tr>
+<tr><td>Guatr</td><td>Diffüz, üfürüm (hipervasküler!)</td><td>Diffüz, sert, lastik kıvam</td></tr>
+<tr><td>Özel</td><td>EKZOFTALMİ, pretibial miksödem, lid lag</td><td>Yok</td></tr>
+</tbody>
+</table></div>
+<p><strong>Tedavi:</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Beta-blokör (İLK VERİLEN!): Propranolol 0.5-2 mg/kg/gün</li>
+<li>Antitiroid: METİMAZOL 0.5-1 mg/kg/gün. <em>Yan etki: agranülositoz (%0.3, ateş+boğaz ağrısı → acil hemogram!)</em></li>
+<li>Definitif: RAI ablasyonu veya cerrahi → ömür boyu levotiroksin</li>
+</ol>
+<p><strong>Tiroid Fırtınası sırası:</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>IV propranolol</li>
+<li>PTU yükleme</li>
+<li>Lugol (PTU'DAN 1 SAAT SONRA! Önce sentezi blok, sonra iyot — yoksa Jod-Basedow)</li>
+<li>Steroid</li>
+<li>Soğutma (<strong>ASPİRİN VERME!</strong> → T4 serbest bırakır)</li>
+</ol>
+<h4 class="h-section">🔎 Hipertiroidi Etyolojisi (Mukaddes — 10 neden istiyor!)</h4>
+<ol class="content" style="padding-left:18px">
+<li>Graves hastalığı (en sık çocukta, TSI/TRAb(+))</li>
+<li>Toksik nodüler guatr (tek veya multipl adenom)</li>
+<li>Hashitoksikoz (Hashimoto başlangıcında geçici hipertiroidi)</li>
+<li>Subakut tiroidit (De Quervain) — ağrılı, viral sonrası</li>
+<li>Sessiz tiroidit (ağrısız)</li>
+<li>İyatrojenik (aşırı levotiroksin)</li>
+<li>Ekzojen iyot yükü (Jod-Basedow)</li>
+<li>TSH salgılayan <strong>hipofiz adenomu</strong> (TSH↑ + hipertiroidi = nadir ama önemli!)</li>
+<li>İnsan koryonik gonadotropin (HCG) — gebelik, gestasyonel tirotoksikoz</li>
+<li>Metastatik tiroid kanseri (foliküler)</li>
+</ol>
+<div class="info-box"><strong>Tip:</strong> Mukaddes hoca 5-10 neden istiyor. İlk 5'i mutlaka bil: Graves, toksik adenom, hashitoksikoz, subakut tiroidit, ekzojen alım + hipofiz adenomu</div>
+`},{id:33,cat:'endokrin',priority:3,title:'Poliüri/Polidipsi + SIADH vs Santral Dİ',tags:'poliüri,SIADH,Dİ,desmopressin,hiponatremi,hipernatremi,ADH',content:`
+<p><strong>Poliüri Nedenleri:</strong> DM (KŞ↑), Santral Dİ (ADH eksikliği), Nefrojenik Dİ (ADH'ye yanıtsız), Hiperkalsemi (Ca↑), Hipokalemi</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>SIADH</th><th>Santral Dİ</th></tr></thead>
+<tbody>
+<tr><td>Na</td><td>↓ (hiponatremi)</td><td>↑ (hipernatremi)</td></tr>
+<tr><td>Serum osmolarite</td><td>↓</td><td>↑</td></tr>
+<tr><td>İdrar osmolarite</td><td>↑ (konsantre — AYKIRI!)</td><td>↓ (dilüe)</td></tr>
+<tr><td>Tedavi</td><td>Su kısıtlama</td><td>Desmopressin</td></tr>
+</tbody>
+</table></div>
+<p><strong>Hiperkalsemi Tedavisi:</strong> ①IV SF hidrasyon ②Furosemid ③Kalsitonin ④Bifosfonatlar ⑤Steroid</p>
+<div class="warn">Hiperkalsemi EKG: QT KISALMASI. SF kullan! Ringer laktat değil (Ca içeriyor!). Hipokalemi ise QT uzar — karıştırma!</div>
+<div class="warn">Hiponatremi/Hipernatremiyi HIZLI düzeltmeyin → günde ≤10-12 mEq/L!</div>
+`},{id:34,cat:'endokrin',priority:1,title:'Boy Kısalığı',tags:'boy,kısalık,büyüme,GH,Turner,endokrin,kemik yaşı',content:`
+<p><strong>Tanım:</strong> Boy &lt;3. persentil veya büyüme hızı &lt;5 cm/yıl.</p>
+<p><strong>Normal Varyant:</strong></p>
+<ul>
+<li>Ailesel: Kemik yaşı = kronolojik, son boy kısa</li>
+<li>Yapısal büyüme gecikmesi: Kemik yaşı &lt; kronolojik, puberte geç, son boy normal</li>
+</ul>
+<p><strong>Patolojik:</strong> GH eksikliği, hipotiroidi, Cushing, kronik hastalık (çölyak, KBY), Turner (45X — <em>her kısa kızda!</em>), iskelet displazisi</p>
+<p><strong>Sınıflama:</strong></p>
+<ul>
+<li><strong>Orantılı:</strong> Endokrin (GH eksikliği, hipotiroidi, KAH, Cushing), Beslenme, Kronik hastalık (çölyak, RTA, kalp, böbrek), Sendromik (Turner, Noonan), Psikososyal</li>
+<li><strong>Orantısız:</strong> Kemik displazileri (akondroplazi), rikets</li>
+</ul>
+<p><strong>Endokrin Boy Kısalığı Ayırt Etme:</strong></p>
+<ul>
+<li>Kemik yaşı geride + büyüme hızı düşük → <strong>GH eksikliği</strong> (IGF-1 düşük)</li>
+<li>Hipotiroidi: TSH↑, FT4↓ → Levotiroksin</li>
+<li>Cushing: Kortizol↑, büyüme geride fakat kilo artışı var</li>
+<li><strong>Turner (45,X0):</strong> Kız, kısa boy, gonadal disgenezi, kalkan göğüs, pterigium koli, kardiyak (<em>aort koarktasyonu!</em>), horseshoe kidney. Tedavi: GH + östrojen</li>
+</ul>
+<p><strong>GH Eksikliği Tanı:</strong></p>
+<ul>
+<li>Stimülasyon testleri: İnsülin hipoglisemi testi veya arjinin testi</li>
+<li>GH &lt;10 μg/L: Yetersiz yanıt</li>
+<li>Tedavi: Rekombinant GH (0.025-0.05 mg/kg/gün SC)</li>
+</ul>
+<div class="pearl">Akondroplazi: FGFR3 mutasyonu. OD. Rizomelik kısa ekstremite (proksimal), büyük baş, normal zeka. Trident el.</div>
+<p><strong>Endokrine Sevk:</strong> ①Boy &lt;3. persentil ②Büyüme hızı &lt;25. persentilden az ③Pubertal atlama yok ④Tüm tetkikler normal ama boy kısa</p>
+<p><strong>Tetkikler:</strong> Büyüme eğrisi, kemik yaşı (sol el-bilek X-ray), TFT, çölyak (tTG IgA), IGF-1, karyotip (kız!)</p>
+`},{id:35,cat:'noro',priority:2,title:'Hipotonik İnfant + Serebral Palsi + SMA',tags:'hipotoni,SMA,serebral palsi,DTR,fasikülasyon,Babinski,kurbağa,traksiyon',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Santral Hipotoni</th><th>Periferik Hipotoni</th></tr></thead>
+<tbody>
+<tr><td>Neden</td><td>SP, Down, hipotiroidi, Prader-Willi</td><td>SMA, miyopati, miyasteni</td></tr>
+<tr><td>DTR</td><td>Normal/↑</td><td>↓/kayıp</td></tr>
+<tr><td>Fasikülasyon</td><td>Yok</td><td><strong>VAR (SMA'da DİLDE!)</strong></td></tr>
+</tbody>
+</table></div>
+<p><strong>3 Hipotoni Muayenesi (Beril MUTLAKA soruyor!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Traksiyon: Kollardan çek → baş arkaya düşer</li>
+<li>Vertikal süspansiyon: Koltuk altından tut → "kayar"</li>
+<li>Horizontal: Yüzüstü tut → "ters U" sarkar</li>
+</ol>
+<p>Ortak: "Kurbağa pozisyonu"</p>
+<p><strong>SMA Tip 1:</strong> 5q13 SMN1 gen delesyonu. OR. Doğum/ilk 6 ay. Ciddi hipotoni, kurbağa pozisyonu, DİLDE FASİKÜLASYON, arefleksi. Tedavi: Nusinersen (intratekal), Onasemnogene (&lt;2 yaş), Risdiplam (oral).</p>
+<p><strong>Serebral Palsi:</strong> FM → hipertoni, spastisite, hiperrefleksi, Babinski(+). SP'den uzaklaştıran: aile/kardeş öyküsü (genetik/metabolik düşün!).</p>
+<p><strong>Babinski:</strong> 18 aya kadar fizyolojik. <em>Asimetrik Babinski = HER YAŞTA PATOLOJİK!</em></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>ÜMN</th><th>AMN</th></tr></thead>
+<tbody>
+<tr><td>Tonus</td><td>Spastisite</td><td>Flask</td></tr>
+<tr><td>DTR</td><td>↑</td><td>↓/kayıp</td></tr>
+<tr><td>Babinski</td><td>(+)</td><td>(-)</td></tr>
+<tr><td>Fasikülasyon</td><td>Yok</td><td>VAR</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">🧠 Serebral Palsi — Yaklaşım</h4>
+<p><strong>SP Etiyolojisi (5 Madde — Ali Cansu/Beril soruyor!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>HIE (Hipoksik-iskemik ensefalopati) — EN SIK! Perinatal asfiksi</li>
+<li>Prematürite + İVK (intraventriküler kanama)</li>
+<li>Merkezi sinir sistemi enfeksiyonu (menenjit, ensefalit)</li>
+<li>Merkezi sinir sistemi travması (doğum travması, NAT)</li>
+<li>Metabolik: ciddi hipoglisemi, hiperbilirübinemi (kernikterus)</li>
+</ol>
+<div class="danger-box"><strong>SP'DEN UZAKLAŞTIRAN BULGULAR (Ali Cansu soruyor — çok puanlı!):</strong>
+<ul>
+<li>Aile veya kardeş öyküsü → Genetik/metabolik hastalık düşün!</li>
+<li>Progresif kötüleşme → SP statiktir, kötüleşmez!</li>
+<li>Dismorfik özellikler → kromozom anomalisi</li>
+<li>Metabolik kriz öyküsü → metabolik hastalık</li>
+</ul>
+</div>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Hipotonik Bebek FM</th><th>Hipertonik Bebek FM</th></tr></thead>
+<tbody>
+<tr><td>Tonus</td><td>Flask, pelte gibi</td><td>Spastisite, sertlik</td></tr>
+<tr><td>DTR</td><td>↓/kayıp (periferik) veya normal (santral)</td><td>↑↑ Hiperrefleksi</td></tr>
+<tr><td>Babinski</td><td>- (periferik) veya + (santral)</td><td>+ (patolojik)</td></tr>
+<tr><td>Priz</td><td>Parmak aralarından kayıyor</td><td>Kenetleniyor, spastik</td></tr>
+<tr><td>Tanı ipucu</td><td>Dil fasikülasyonu → SMA!</td><td>Asimetrik Babinski → HER YAŞTA patolojik</td></tr>
+</tbody>
+</table></div>
+<p><strong>SP Tedavisi (Ayşenur Bahadır soruyor — 4 alan!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Fizik tedavi ve rehabilitasyon (botulinum toksini, cerrahi - seçilmiş)</li>
+<li>Beslenme takibi (yutma güçlüğü → NG tüp/PEG)</li>
+<li>Psikolojik destek (çocuk + aile)</li>
+<li>Nörolojik takip — EPİLEPSİ RİSKİ! (%25-50)</li>
+</ol>
+<div class="info-box"><strong>SMA Tanı için ek tetkik (Burcu Güven soruyor):</strong> Kreatin Kinaz (CK) — SMA'da normal veya hafif yüksek. Miyopatide çok yüksek! SMN1 genetik testi kesin tanı. Prenatal tanı: Amniyosentez VEYA <strong>Koryon Villus Biyopsisi</strong> (10-13. hf, daha erken!)</div>
+`},{id:36,cat:'noro',priority:1,title:'Serebellar Ataksi + 11 Muayene Bulgusu',tags:'serebellar,ataksi,romberg,disdiadokokinezi,nistagmus,dismetri,tremor',content:`
+<p><strong>11 Serebellar Muayene Bulgusu (Beril slaytı):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Ataksik yürüyüş (geniş tabanlı)</li>
+<li><strong>Romberg NEGATİF</strong> (propriyosepsiyon normal, serebellar)</li>
+<li>Parmak-burun testi (dismetri)</li>
+<li>Topuk-diz testi</li>
+<li>Disdiadokokinezi</li>
+<li>İntansiyon tremoru (hedefe yaklaştıkça artar)</li>
+<li>Nistagmus</li>
+<li>Dizartri (patlayıcı konuşma)</li>
+<li>Hipotoni</li>
+<li>Rebound fenomeni</li>
+<li>Geniş adım</li>
+</ol>
+<p><strong>Akut Ataksi Nedenleri (Yaşa Göre):</strong></p>
+<ul>
+<li><strong>Akut postenfeksiyöz serebellar ataksi:</strong> En sık! (Varisella sonrası %1/4000)
+  <ul>
+    <li>Özellikleri: İyi genel durum, MRI genellikle normal, 1-3 ayda düzelir</li>
+  </ul>
+</li>
+<li><strong>İntoksikasyon:</strong> Alkol, fenitoin, barbitürat, antihistaminikler</li>
+<li><strong>Posterior fossa tümörü:</strong> MUTLAKA MRI ile dışla!
+  <ul>
+    <li>Medülloblastom: Çocukta en sık malign beyin tümörü, serebellum</li>
+    <li>Astrositom: Serebellar, iyi prognoz, kistik+solid</li>
+  </ul>
+</li>
+<li><strong>Guillain-Barré:</strong> Miller-Fisher varyantı (ataksi+oftalmopleji+arefleksi)</li>
+</ul>
+<p><strong>Kronik/Tekrarlayan Ataksi:</strong></p>
+<ul>
+<li><strong>Friedreich ataksi:</strong> OR, spinoserebellar, 5-15 yaş, kardiomiyopati, diyabetes, pes kavus</li>
+<li><strong>Ataksi-Telanjiektazi:</strong> OR, ATM geni, IgA eksikliği, oküler telanjiektazi, kanser riski (lenfoma)</li>
+</ul>
+<div class="pearl">"4 yaş, ataksik yürüyüş, 2 hf önce su çiçeği" → Akut postenfeksiyöz serebellar ataksi. MRG ile posterior fossa tümörü MUTLAKA dışla!</div>
+<p><strong>Not:</strong> Ali Cansu intansiyon tremoru ve Romberg'i özellikle soruyor.</p>
+`},{id:37,cat:'noro',priority:2,title:'İskemik İnme + Febril Konvülsiyon',tags:'inme,stroke,febril,konvülsiyon,LP,profilaksi',content:`
+<p><strong>İskemik İnme:</strong></p>
+<ul>
+<li>Etyoloji: Kardiyoembolik (KKH — EN SIK!), orak hücreli, vaskülît, protrombotik</li>
+<li>Acil BT → kanama dışla. Difüzyon MRI → erken iskemi</li>
+<li>Tedavi: Oral alımı kapat, yatak başı 30°, KİBAS → mannitol</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Basit Febril Konvülsiyon</th><th>Komplike Febril Konvülsiyon</th></tr></thead>
+<tbody>
+<tr><td>Süre</td><td>&lt;15 dk</td><td>&gt;15 dk</td></tr>
+<tr><td>Tip</td><td>Jeneralize</td><td>Fokal olabilir</td></tr>
+<tr><td>24 sa tekrar</td><td>Hayır</td><td>Evet</td></tr>
+<tr><td>Epilepsi riski</td><td>%1-2</td><td>%4-12</td></tr>
+</tbody>
+</table></div>
+<p><strong>Akut tedavi</strong> (&gt;5 dk): Diazepam 0.3 mg/kg IV / 0.5 mg/kg rektal</p>
+<p><strong>LP endikasyonu:</strong> &lt;12 ay, meningeal irritasyon, komplike, AB almış</p>
+<div class="warn">BFK'da profilaktik antiepileptik ÖNERİLMEZ!</div>
+`},{id:38,cat:'enfeksiyon',priority:2,title:'Menenjit — BOS + Tedavi',tags:'menenjit,BOS,Kernig,Brudzinski,seftriakson,deksametazon,Listeria',content:`
+<p><strong>Meningeal İrritasyon (Ali Cansu kurtarma!):</strong></p>
+<ul>
+<li>Ense sertliği: Baş öne eğilince direnç</li>
+<li>Kernig: Kalça+diz 90°, diz ekstansiyona → direnç + ağrı</li>
+<li>Brudzinski: Baş öne eğince kalça+diz refleks fleksiyon</li>
+<li>&lt;1 yaş: Bu bulgular alınamayabilir → <strong>FONTANELBOMBELİĞİ en önemli bulgu</strong></li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>BOS</th><th>Normal</th><th>Bakteriyel</th><th>Viral</th><th>TB</th></tr></thead>
+<tbody>
+<tr><td>Görünüm</td><td>Berrak</td><td>BULANIK</td><td>Berrak</td><td>Berrak/hafif</td></tr>
+<tr><td>Hücre</td><td>&lt;5/mm³</td><td>↑↑ Nötrofil</td><td>↑ Lenfosit</td><td>↑ Lenfosit</td></tr>
+<tr><td>Protein</td><td>&lt;40 mg/dL</td><td>↑↑ (&gt;100)</td><td>N/hafif↑</td><td>↑↑</td></tr>
+<tr><td>Glukoz (BOS/serum)</td><td>&gt;0.6</td><td>↓↓ (&lt;0.4)</td><td>Normal</td><td>↓</td></tr>
+</tbody>
+</table></div>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li>LP BEKLENMEden başla!</li>
+<li>0-3 ay: Ampisilin + Sefotaksim (Listeria + Gram(-) kapsama)</li>
+<li>&gt;3 ay: <strong>SEFTRİAKSON + VANKOMİSİN</strong> (dirençli pnömokok!)</li>
+<li>Deksametazon: İlk AB dozundan <strong>15-30 dk ÖNCE başla,</strong> 4 gün. İşitme kaybını azaltır (H.influenzae'de)</li>
+<li>Meningokok profilaksisi: Yakın temaslılara rifampisin 2 gün</li>
+</ul>
+<h4 class="h-section">🔎 Etkenler Yaşa Göre</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Yaş</th><th>En Sık Etkenler</th><th>Empirik AB</th></tr></thead>
+<tbody>
+<tr><td>0-3 ay</td><td>GBS, E.coli, Listeria, Klebsiella</td><td>Ampisilin + Sefotaksim</td></tr>
+<tr><td>3 ay - 5 yaş</td><td>N.meningitidis, S.pneumoniae, H.influenzae tip b</td><td>Seftriakson + Vankomisin</td></tr>
+<tr><td>&gt;5 yaş</td><td>N.meningitidis (en sık!), S.pneumoniae</td><td>Seftriakson + Vankomisin</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">⚠️ LP Kontrendikasyonları</h4>
+<ul>
+<li>Papilödem / fokal nörolojik defisit → önce BT!</li>
+<li>Bilinç bozukluğu (GKS &lt;8)</li>
+<li>Trombositopeni &lt;50.000, koagülopati</li>
+<li>Cilt enfeksiyonu LP bölgesinde</li>
+<li>Kardiyorespiratuvar instabilite</li>
+</ul>
+<div class="danger-box">LP yapılamazsa: Kan kültürü al → AB BAŞLA → BT → sonra LP. AB başlanması BOS kültürünü olumsuz etkileyebilir ama <strong>AB'yi GECİKTİRME!</strong></div>
+<h4 class="h-section">🦠 HSV Ensefaliti</h4>
+<ul>
+<li>Temporal lob tutulumu, MRI T2/DWI pozitif</li>
+<li>BOS: HSV PCR</li>
+<li>Klinik: Ateş + davranış değişikliği + fokal bulgu + temporal lezyon</li>
+<li><strong>Asiklovir BAŞLA:</strong> 20 mg/kg/doz IV 8 saatte 1 (max 60 mg/kg/gün), 14-21 gün</li>
+<li>Şüphede bile başla! Geç tedavi mortalite↑</li>
+</ul>
+`},{id:39,cat:'enfeksiyon',priority:3,title:'ARA — Jones 2015 + Tedavi',tags:'ARA,Jones,romatizmal,kardit,korea,sekonder profilaksi,GAS,Sydenham',content:`
+<p><strong>Tanı:</strong> Streptokok enfeksiyon kanıtı (ZORUNLU!) + 2 majör VEYA 1 majör + 2 minör</p>
+<p><strong>Majör Kriterler:</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Kardit (pankardit): <strong>EN CİDDİ + KALICI SEKEL!</strong> Endokardit (EN SIK MİTRAL), miyokardit, perikardit. EKO mutlaka!</li>
+<li>Artrit: Gezici poliartrit (büyük eklemler). TÜRKİYE orta-yüksek risk → aseptik monoartrit de majör!</li>
+<li>Sydenham Koresi: 2-6 ay sonra. İstemsiz hareketler. <strong>TEK BAŞINA TANI KOYDURUR!</strong></li>
+<li>Eritema marginatum: Halkamsı, merkezleri soluk, gövde. Banyoyla belirginleşir</li>
+<li>Subkutan nodüller: Sert, ağrısız, kemik çıkıntıları. Ağır kardit ile ilişkili</li>
+</ol>
+<p><strong>Minör Kriterler (Türkiye orta-yüksek):</strong> Monoartralji, Ateş &gt;38°C, ESR&gt;30 veya CRP&gt;3, PR uzaması</p>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li>GAS eradikasyon: Benzatin PG G tek doz IM (600.000 Ü &lt;27 kg; 1.200.000 Ü ≥27 kg)</li>
+<li>Artrit: Aspirin 80-100 mg/kg/gün (dramatik yanıt!)</li>
+<li>Kardit (ağır): Prednizolon 2 mg/kg/gün ×2-3 hf</li>
+<li>Sekonder profilaksi: Benzatin PG IM her 3-4 hf. Kardit+kapak hasarı → 10 yıl veya 40 yaşa. Kardit yok → 21 yaşa veya son ataktan 5 yıl</li>
+</ul>
+<div class="pearl">ESR açılımı: Erythrocyte Sedimentation Rate (Yakup sormuş!)</div>
+`},{id:40,cat:'enfeksiyon',priority:2,title:'Aşı Takvimi',tags:'aşı,KKK,takvim,kontrendikasyon,IVIG,HepB,BCG',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Yaş</th><th>Aşılar</th></tr></thead>
+<tbody>
+<tr><td>Doğum</td><td>HepB 1, BCG</td></tr>
+<tr><td>1. ay</td><td>HepB 2</td></tr>
+<tr><td>2. ay</td><td>6'lı karma 1, KPA 1</td></tr>
+<tr><td>4. ay</td><td>6'lı karma 2, KPA 2</td></tr>
+<tr><td>6. ay</td><td>6'lı karma 3, KPA 3, OPA 1</td></tr>
+<tr><td><strong>9. ay</strong></td><td><strong>KKK 1 (GÜNCELLEME!)</strong></td></tr>
+<tr><td>12. ay</td><td>KPA rapel, HepA 1, Su çiçeği 1</td></tr>
+<tr><td>15. ay</td><td>KKK rapel</td></tr>
+<tr><td>18. ay</td><td>5'li karma rapel, OPA 2, HepA 2</td></tr>
+</tbody>
+</table></div>
+<ul>
+<li>IVIG sonrası canlı aşılar 5-11 ay ertelenir</li>
+<li><strong>Kesin kontrendikasyon:</strong> Önceki dozda anafilaksi. Canlı aşılar: ağır immün yetmezlik, gebelik</li>
+<li><strong>YANLIŞ kontrendikasyon (YAPILIR!):</strong> Hafif hastalık, AB, prematürite, anne sütü, ailede konvülsiyon</li>
+</ul>
+`},{id:41,cat:'enfeksiyon',priority:2,title:'Pnömoni + Tüberküloz + Bronşiolit',tags:'pnömoni,tüberküloz,TB,RSV,streptococcus,INH,rifampisin,bronşiolit,palivizumab,wheezing,FM,oskültasyon,grafi',content:`
+<div class="warn"><strong>Fazıl Orhan:</strong> "Kılavuz yetersiz!" — FM bulguları + grafi yorumunu detaylı biliyor olmanızı bekliyor!</div>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Viral Pnömoni</th><th>Bakteriyel Pnömoni</th><th>Atipik (M.pneumoniae)</th></tr></thead>
+<tbody>
+<tr><td>Başlangıç</td><td>Yavaş, ÜSYE sonrası</td><td>Ani, yüksek ateş &gt;39°C</td><td>Sinsi, hafif ateş, kuru öksürük</td></tr>
+<tr><td><strong>FM (oskültasyon)</strong></td><td>Bilateral wheezing, faint krepitan</td><td><strong>Tek taraf krepitan ral</strong>, perküsyonda matite, nefes sesi ↓</td><td>Diffüz krepitan, wheeze</td></tr>
+<tr><td><strong>Grafi</strong></td><td>Peribronşiyal tutulum, hiperinflasyon</td><td><strong>Lober/segmenter konsolidasyon</strong>, plevral sıvı olabilir</td><td>İnterstisyel (retiküler), diffüz bilateral</td></tr>
+<tr><td>Etken</td><td>RSV (&lt;2 yaş), Influenza, Para-influenza</td><td>S.pneumoniae (en sık!); &lt;3 ay: GBS, Listeria</td><td>&gt;5 yaş: M.pneumoniae, C.pneumoniae</td></tr>
+<tr><td>Tedavi</td><td>Destek (AB YOK!)</td><td>Amoksisilin 80-90 mg/kg/gün</td><td>Azitromisin 10 mg/kg/gün ×5 gün</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">🔍 Fizik Muayene Bulguları — Detay (Fazıl için!)</h4>
+<ul>
+<li><strong>İnspeksiyon:</strong> Takipne (en hassas ve özgül bulgu!), subkostal/interkostal/supraklaviküler retraksiyon, burun kanadı solunumu, siyanoz (ağır)</li>
+<li><strong>Perküsyon:</strong> Konsolidasyon olan bölgede <strong>matite</strong> (sıvı olunca da matite!)</li>
+<li><strong>Oskültasyon:</strong> Konsolidasyon → <strong>krepitan ral + bronşiyal solunum sesi + egofoni</strong>. Plevral efüzyon → o bölgede nefes sesleri ↓↓</li>
+<li><strong>Egofoni:</strong> Hasta "E" der, doktor "A" duyar → Konsolidasyon kanıtı</li>
+</ul>
+<h4 class="h-section">📸 Grafi Yorumu (Akciğer)</h4>
+<ul>
+<li><strong>Lober konsolidasyon (bakteriyel):</strong> Homojen opasite, hava bronkogramı (+), konsolidasyonun kenarından sınır belli</li>
+<li><strong>Hava bronkogramı:</strong> Parankimde konsolidasyon varken bronşlar hava içerdiğinden görünür hale gelir → pnömoni kanıtı</li>
+<li><strong>Plevral efüzyon:</strong> Kostafrenik sinüs küntleşmesi, kostalar arası mesafe artışı, masif olunca mediastinal itmesi</li>
+<li><strong>Hiperinflasyon (bronşiolit/astım):</strong> Diyafragma düzleşmesi, AP çap artışı, 10-11 posteriors kosta sayılır</li>
+<li><strong>İnterstisyel (viral/atipik):</strong> Peribronşiyal işaretlenme artışı, retiküler görünüm, diffüz bilateral</li>
+</ul>
+<p><strong>Tüberküloz:</strong></p>
+<ul>
+<li>Çocukta paucibacillary. TST: ≥15mm normal; ≥5mm immünsüprese; ≥10mm orta risk</li>
+<li>Tedavi: 2 ay İNH+RİF+PZA+ETB → 4 ay İNH+RİF. <strong>İNH ile B6 VER!</strong></li>
+<li><em>Nefrotik sendromda steroid başlamadan TB DIŞLA!</em></li>
+</ul>
+<h4 class="h-section">💊 Antibiyotik Dozları</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>İlaç</th><th>Doz</th><th>Max Doz</th><th>Süre</th></tr></thead>
+<tbody>
+<tr><td>Amoksisilin (hafif)</td><td>80-90 mg/kg/gün, 3×</td><td>3 g/gün</td><td>5-7 gün</td></tr>
+<tr><td>Amoksisilin-Klav.</td><td>80-90 mg/kg/gün (amoks. baz), 2-3×</td><td>3 g/gün amoks.</td><td>7-10 gün</td></tr>
+<tr><td>Azitromisin (atipik)</td><td>10 mg/kg/gün 1×</td><td>500 mg/gün</td><td>5 gün</td></tr>
+<tr><td>Ampisilin (yatış)</td><td>200 mg/kg/gün, 4× IV</td><td>12 g/gün</td><td>7-10 gün</td></tr>
+<tr><td>Seftriakson (ağır)</td><td>50-75 mg/kg/gün, 1× IV</td><td>2-4 g/gün</td><td>7-14 gün</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">🔬 Tüberküloz — Detay</h4>
+<ul>
+<li>TST (Tüberkülin/Mantoux): &gt;5 mm immünsüprese/yakın temas; &gt;10 mm orta risk; &gt;15 mm düşük risk. BCG'den etkilenir!</li>
+<li>IGRA (Quantiferon): BCG'den etkilenmez, ≥2 yaşta tercih</li>
+<li>Aktif TB tanı: Klinik + radyoloji + kültür (altın standart, 6-8 hf)</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>İlaç</th><th>Doz</th><th>Max Doz/gün</th><th>Süre</th><th>Yan Etki</th></tr></thead>
+<tbody>
+<tr><td>İzoniazid (İNH)</td><td>10-15 mg/kg/gün</td><td>300 mg</td><td>6-9 ay</td><td>Hepatit, periferik nöropati</td></tr>
+<tr><td>Rifampisin (RİF)</td><td>10-20 mg/kg/gün</td><td>600 mg</td><td>6 ay</td><td>Turuncu idrar/gözyaşı, hepatit</td></tr>
+<tr><td>Pirazinamid (PZA)</td><td>30-40 mg/kg/gün</td><td>2 g</td><td>2 ay</td><td>Hepatit, gut</td></tr>
+<tr><td>Etambutol (ETB)</td><td>15-25 mg/kg/gün</td><td>1.2 g</td><td>2 ay</td><td>Optik nörit (renk görme bozukluğu)</td></tr>
+</tbody>
+</table></div>
+<div class="info-box"><strong>İNH profilaksi (latent TB):</strong> 9 ay İNH monoterapi. Piridoksin (B6) ekle: 6-25 mg/gün (periferik nöropati önleme)</div>
+<div class="warn">Nefrotik sendromda + steroid → TB riski! Steroid başlamadan tüberkülin testi yap!</div>
+<h4 class="h-section">🫁 Bronşiolit (RSV) — Tam Klinik Tablo</h4>
+<p><strong>Bronşiolit =</strong> &lt;2 yaş, ilk atak, viral etkenle alt solunum yolu iltihabı. <strong>RSV en sık (%60-80), kış.</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Evre</th><th>Klinik</th></tr></thead>
+<tbody>
+<tr><td>Başlangıç (1-3. gün)</td><td>Burun akıntısı, hafif öksürük, düşük ateş (37.5-38.5°C)</td></tr>
+<tr><td>Pik (3-5. gün)</td><td><strong>Wheezing + takipne + retraksiyonlar (subcostal/interkostal) + hiperinflasyon</strong></td></tr>
+<tr><td>Hiperinflasyon</td><td>Göğüs AP çapı artar, diyafragma düzleşir, havalanma artışı (GRAFIDE!)</td></tr>
+<tr><td>Beslenme bozukluğu</td><td>Solunum işi arttığı için emmez, ağızdan beslenemiyor → NG gerekebilir</td></tr>
+</tbody>
+</table></div>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Risk Faktörü</th><th>Hastaneye Yatış Endikasyonu</th></tr></thead>
+<tbody>
+<tr><td>&lt;3 ay</td><td>SpO₂ &lt;%92 oda havasında</td></tr>
+<tr><td>Prematüre (&lt;35 hf)</td><td>Beslenemiyor (dehidrasyon riski)</td></tr>
+<tr><td>Kronik akciğer hastalığı (BPD)</td><td>Apne atakları (özellikle &lt;2 ay)</td></tr>
+<tr><td>Konjenital kalp hastalığı (KKH)</td><td>Toksik görünüm, hızlı kötüleşme</td></tr>
+<tr><td>İmmünyetmezlik</td><td>Ebeveyn bakım kapasitesi yetersiz</td></tr>
+</tbody>
+</table></div>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li><strong>Destek tedavisi → YEGANE TEDAVİ!</strong> Bronşiolitte antibiyotik, sistemik steroid, salbutamol rutin önerilmez</li>
+<li>Oksijen: SpO₂ &lt;%92 ise nazal kanül (%100 O₂ gereksiz)</li>
+<li>Sıvı/beslenme: Oral alımı varsa devam. Yoksa NG tüp veya IV sıvı</li>
+<li>Nazal aspirasyon (serum fizyolojik ile): sekresyonları temizler</li>
+<li>Tuzlu su nazal nebülizasyon (hipertonik %3 NaCl): hastanede yatış süresini kısaltabilir</li>
+</ul>
+<div class="info-box"><strong>Palivizumab (RSV Profilaksisi):</strong> Anti-RSV monoklonal antikor, ayda 1 IM. Endikasyon: &lt;35 hf prematüre (ilk 2 sezon) / KKH / BPD / immünyetmezlik. Viral enfeksiyonu tedavi etmez, önler!</div>
+<div class="danger-box"><strong>⚠️ Bronşiolit ≠ Astım:</strong> İlk atak, &lt;2 yaş, kış, aile öyküsü yok = bronşiolit. Tekrarlayan wheezing + aile öyküsü = astım? ≥3 atak = rekürran bronşiolit → allerjist değerlendirmesi</div>
+`},{id:42,cat:'gastro',priority:2,title:'Akut Pankreatit',tags:'pankreatit,amilaz,lipaz,NSAİİ,AB,ERCP',content:`
+<p><strong>Tanı (3'ten 2'si yeter):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Karakteristik ağrı (epigastrik, kuşak tarzı, öne eğilince rahatlar)</li>
+<li>Amilaz/lipaz <strong>≥3 KAT↑</strong></li>
+<li>Görüntüleme (BT/MR)</li>
+</ol>
+<p><strong>Etyoloji (çocukta):</strong></p>
+<ul>
+<li><strong>İdyopatik</strong> (en sık çocukta!)</li>
+<li>Travma (yüksek enerji kapsamı)</li>
+<li>İlaç: <em>L-asparaginaz, valproat, steroid, azatiyoprin</em></li>
+<li>Safra taşı (adolesanda)</li>
+<li>Anatomik anomali (pankreas divisum)</li>
+<li>Viral: Kabakulak, Coxsackie</li>
+</ul>
+<p><strong>Tedavi:</strong></p>
+<ul>
+<li>Erken oral beslenme güvenli (güncel kanıt!)</li>
+<li>Agresif IV hidrasyon</li>
+<li>Ağrı: Parasetamol veya opioid. <strong>NSAİİ VERİLMEZ!</strong></li>
+<li>AB: Enfeksiyon yoksa <strong>VERİLMEZ!</strong> (rutin AB endikasyonu yok)</li>
+<li>Ciddi vakalarda enteral beslenme (NG/NJ tüp)</li>
+</ul>
+<p><strong>Komplikasyonlar:</strong></p>
+<ul>
+<li><strong>Psödokist:</strong> 4-6 hf sonra. Görüntüleme izlem, çoğu kendiliğinden gerilir</li>
+<li><strong>Nekrotizan pankreatit:</strong> BT/MR ile tanı. Enfekte nekroz → AB + drenaj</li>
+<li>SIRS/Sepsis</li>
+</ul>
+<div class="pearl">ERCP: Safra taşına bağlı pankreatitte (obstrüksiyon varsa). Ağırlık skorlaması: APACHE II, Balthazar (BT skoru)</div>
+`},{id:43,cat:'gastro',priority:2,title:'Kabızlık + Hirschsprung Ayrımı',tags:'kabızlık,Hirschsprung,PEG,konstipasyon,mekonyum,rektum',content:`
+<p><strong>Hirschsprung vs Fonksiyonel Kabızlık:</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Hirschsprung</th><th>Fonksiyonel</th></tr></thead>
+<tbody>
+<tr><td>Başlangıç</td><td>Doğumdan beri, &gt;48 sa mekonyum</td><td>Genelde 2 yaştan sonra</td></tr>
+<tr><td>Rektal muayene</td><td>Ampulla BOŞ + parmak çekince FIŞKIRMA</td><td>Ampulla dolu</td></tr>
+<tr><td>Distansiyon</td><td>Belirgin</td><td>Hafif</td></tr>
+</tbody>
+</table></div>
+<p><strong>Organik Dışla:</strong> Hirschsprung, Hipotiroidi, Hiperkalsemi, Çölyak, Spinal kord anomalisi</p>
+<p><strong>Fonksiyonel Kabızlık Tedavisi:</strong></p>
+<ul>
+<li>Diyet (lif↑, sıvı↑), tuvalet eğitimi</li>
+<li>İmpaksiyon varsa: PEG yüksek doz ile boşalt</li>
+<li>İdame: PEG 3350 (0.5-1 g/kg/gün)</li>
+<li>Süre: 3 hafta tedavi + 1 ay azaltarak kes</li>
+</ul>
+`},{id:44,cat:'alerji',priority:1,title:'Atopik Dermatit + Ürtiker',tags:'atopik,ürtiker,histamin,mast,antihistaminik,takrolimus,Th2,bariyer',content:`
+<p><strong>Atopik Dermatit:</strong></p>
+<ul>
+<li>İnfant → yüz (yanak), ekstansör. Büyük → fleksural (antekübital, popliteal)</li>
+<li>TUTULMAYAN: Aksiller, diaper bölge, burun çevresi</li>
+<li>Patogenez (Fazıl!): Bariyer bozulması → Th2 → IL-4, IL-13 → Mast hücresi → histamin → vazodilatasyon+ödem+kaşıntı</li>
+<li>Tedavi: ①Emolyan (temel!) ②Topikal KS (max 7-14 gün) ③Takrolimus ≥2 YAŞ (yüzde kullan!) ④Antihistaminik ⑤Tetikleyiciden kaçın</li>
+</ul>
+<p><strong>Ürtiker:</strong></p>
+<ul>
+<li>Baskıyla solan, 24 saatte yer değiştiren kabarıklıklar</li>
+<li>Patogenez (Fazıl MUTLAKA soruyor!): Alerjen → IgE → <strong>MAST HÜCRESİ aktivasyonu</strong> → histamin → vazodilatasyon + kapiller permeabilite↑</li>
+<li>Tedavi: 2. kuşak antihistaminik (setirizin, loratadin) 1. tercih</li>
+</ul>
+<h4 class="h-section">⚕️ AD Tedavi Basamakları</h4>
+<ol class="content" style="padding-left:18px">
+<li><strong>Emolyan (temel!):</strong> Banyo sonrası 3 dakika içinde uygula (nemliliği kilitle). Günde 2×</li>
+<li><strong>Topikal kortikosteroid (akut bataklar):</strong> Hafif → Hidrokortizon %1 (yüz). Orta → Mometazon. Ağır → Betametazon (yüze sürme!). Max 7-14 gün</li>
+<li><strong>Takrolimus/Pimekrolimus (kalsinörin inhibitörü):</strong> ≥2 yaş, hassas bölgeler (yüz!), uzun dönem güvenli</li>
+<li><strong>Antihistaminik:</strong> Kaşıntı kontrolü (sedatif: Klemastin). Enfeksiyon varsa AB</li>
+<li><strong>Ağır/dirençli:</strong> Dupilumab (IL-4Rα inhibitörü, ≥6 ay onaylı)</li>
+</ol>
+<h4 class="h-section">⚕️ Ürtiker — Tanı + Tedavi</h4>
+<ul>
+<li>Akut (&lt;6 hf): Viral (%40 çocukta), alerjik (gıda/ilaç), idyopatik</li>
+<li>Kronik (&gt;6 hf): Kronik spontan ürtiker (çoğu idyopatik), fiziksel (dermatografizm, soğuk, basınç)</li>
+<li>Anjiyoödem + nefes güçlüğü → Anafilaksi tanımı!</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead><tr><th>İlaç</th><th>Doz</th><th>Max</th><th>Not</th></tr></thead>
+<tbody>
+<tr><td>Setirizin (2. kuş.)</td><td>&lt;2y: 2.5 mg/gün; 2-6y: 5 mg/gün; &gt;6y: 10 mg/gün</td><td>10 mg/gün</td><td>Az sedasyon</td></tr>
+<tr><td>Loratadin (2. kuş.)</td><td>2-5y: 5 mg/gün; &gt;5y: 10 mg/gün</td><td>10 mg/gün</td><td>Non-sedatif</td></tr>
+<tr><td>Difenhidramin (1. kuş.)</td><td>1.25 mg/kg/doz, 4-6 sa</td><td>50 mg/doz</td><td>Sedasyon, akut</td></tr>
+</tbody>
+</table></div>
+<div class="info-box"><strong>Herediter anjiyoödem:</strong> C1 esteraz inhibitör eksikliği. Adrenaline yanıt ZOR. Bradikinin kaynaklı. Tedavi: C1-INH konsantresi, ikatiband, traneksamik asit</div>
+`},{id:45,cat:'hemat',priority:1,title:'Nöroblastom',tags:'nöroblastom,NSE,MIBG,rozet,abdominal,adrenal,Homer-Wright',content:`
+<ul>
+<li>En sık ekstrakranial solid tümör. Sempatik sinir kökenli. Median 2 yaş. %65 abdominal (adrenal)</li>
+<li>Markerlar: <strong>NSE↑ (en spesifik!), LDH↑, ferritin↑, İDRAR VMA/HVA↑</strong></li>
+<li>Kİ: <strong>HOMER-WRIGHT PSÖDOROZET formasyonları!</strong> (Mukaddes soruyor)</li>
+<li>Görüntüleme: MIBG sintigrafisi</li>
+<li>Stage 4S (&lt;1 yaş): Spontan regresyon olabilir</li>
+</ul>
+<p><strong>Klinik Bulgular:</strong></p>
+<ul>
+<li><strong>Abdominal kitle:</strong> Sert, düzensiz, orta hattı geçebilir (<em>Wilms'ten farkı: Wilms yumuşak, orta hattı geçmez</em>)</li>
+<li><strong>Metastaz bulguları:</strong> <em>"Rakun gözleri"</em> (periorbital ekimoz — kemik metastazı!), subkutan mavi nodüller ("&lt;1 yaş 4S")</li>
+<li>Hipertansiyon (katekolamin salgısı), ishal (VIP salgısı)</li>
+<li>Horner sendromu (servikal tümör → ptosis, miyozis, anhidroz)</li>
+<li><strong>Opsoklonus-miyoklonus-ataksi:</strong> Paraneoplastik ("dans eden gözler")</li>
+</ul>
+<p><strong>Evreleme (INRG):</strong></p>
+<ul>
+<li>L1: Lokalize, cerrahi-alan risk faktörü yok</li>
+<li>L2: Lokalize, risk faktörü var</li>
+<li>M: Metastatik (%65 tanı anında!)</li>
+<li>MS: &lt;18 ay, M spesifik (4S karşılığı)</li>
+</ul>
+<p><strong>Prognostik faktörler:</strong></p>
+<ul>
+<li><strong>N-MYC amplifikasyonu:</strong> Kötü prognoz!</li>
+<li>ALK mutasyonu, 1p delesyonu, 11q delesyonu: Kötü</li>
+<li>Triploid: İyi prognoz</li>
+</ul>
+<div class="pearl">NSE ve rozet formasyonunu MUTLAKA söyle! (Mukaddes)</div>
+`},{id:46,cat:'yd',priority:3,title:'Metabolik Hastalık + K Vitamini',tags:'metabolik,K vitamini,PT,aPTT,galaktozemi,WAGR,Wilms',content:`
+<p><strong>Metabolik Hastalık 6 Bulgu (Mukaddes!):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Açıklanamayan uzamış sarılık</li>
+<li>Kilo alamama</li>
+<li>Kardeş ölüm öyküsü</li>
+<li>Akraba evliliği</li>
+<li>Tekrarlayan kusma/letarji</li>
+<li>Nörolojik gerileme</li>
+</ol>
+<p><strong>K Vitamini Eksikliği (Erol!):</strong></p>
+<ul>
+<li>PT↑, aPTT↑, trombosit ve fibrinojen <strong>NORMAL</strong> (DIC'ten farkı: DIC'te trombosit de düşer!)</li>
+<li>Tedavi sonrası PT kontrolü: <strong>4 SAAT!</strong> (Erol bunu özellikle soruyor)</li>
+<li>Profilaksi: Tüm YD'lara doğumda 1 mg K vitamini IM</li>
+</ul>
+<div class="pearl">WAGR Sendromu (Gülay kurtarma!): Wilms + Aniridi + Genitouriner anomali + Mental Retardasyon</div>
+`},{id:47,cat:'hemat',priority:2,title:'LAP + Lösemi + TLS',tags:'LAP,lösemi,TLS,tümör lizis,hiperürisemi,rasburikaz,allopürinol',content:`
+<p><strong>Patolojik LAP Kriterleri:</strong></p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Benign</th><th>Malign</th></tr></thead>
+<tbody>
+<tr><td>Boyut</td><td>&lt;2 cm</td><td>&gt;2-3 cm ve büyüyor</td></tr>
+<tr><td>Kıvam</td><td>Yumuşak/elastik</td><td>Sert/kauçuğumsu</td></tr>
+<tr><td>Mobilite</td><td>Mobil</td><td>FİKSE, matted</td></tr>
+<tr><td>Ağrı</td><td>Ağrılı (akut enfeksiyon)</td><td>AĞRISIZ</td></tr>
+<tr><td>Lokalizasyon</td><td>Servikal (reaktif)</td><td><strong>SUPRAKLAVİKÜLAR! HER ZAMAN ALARM!</strong></td></tr>
+</tbody>
+</table></div>
+<p><strong>TLS (En sık ALL ve Burkitt):</strong> Kemoterapi başlangıcından 12-72 sa. <strong>4K: HiperÜrisemi, HiperPotasemi, HiperFosfatemi, HipoKalsemi</strong></p>
+<ul>
+<li>Hiperürisemi → ürat nefropatisi → ABY</li>
+<li>Hiperpotasemi → kardiyak aritmi!</li>
+<li>Hiperfosfatemi → Ca-fosfat çökmesi → hipokalsemi → tetani</li>
+<li>Tedavi: ①Agresif IV hidrasyon ②Allopürinol VEYA <strong>Rasburikaz</strong> (çok hızlı!) ③Hiperpotasemi tedavisi ④Refrakter → diyaliz</li>
+</ul>
+<h4 class="h-section">🩺 LAP Biyopsi Endikasyonları (Embiya soruyor!)</h4>
+<ul>
+<li>Boyut &gt;2-3 cm + büyüyor</li>
+<li><strong>Supraklaviküler lokalizasyon</strong> (HER ZAMAN biyopsi!)</li>
+<li>4 hf antibiyotikten sonra küçülmüyor</li>
+<li>Sert, fikse, ağrısız</li>
+<li>B semptomları: Ateş, gece terlemesi, kilo kaybı</li>
+<li>Hepatosplenomegali eşlik ediyor</li>
+<li>Hemogram anormalliği</li>
+</ul>
+<div class="info-box"><strong>LAP + ateş + HSM + peteşi/purpura → Lösemi düşün!</strong> (Embiya hoca bu dört bulguyu bekliyor)</div>
+
+<h4 class="h-section">💙 Siyanotik Spell (Fallot — Embiya Dilber soruyor!)</h4>
+<ul>
+<li>Görüldüğü hastalık: <strong>Fallot Tetralojisi</strong> (ağlama, beslenme, defekasyon sırasında)</li>
+<li>Mekanizma: Pulmoner vasküler direncin SVR'yi geçmesi → sağdan sola şant artışı</li>
+</ul>
+<p><strong>Tedavi (sırasıyla):</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Diz-göğüs pozisyonu (knee-chest) → SVR artırır → pulmoner akım artar</li>
+<li>%100 O₂ → pulmoner vazodilatasyonu destekler</li>
+<li>IV sıvı bolus</li>
+<li>Morfin 0.1-0.2 mg/kg IV/SC → solunum merkezini yatıştırır, infundibüler spazm azalır</li>
+<li>NaHCO₃ 1-2 mEq/kg IV → asidozu düzelt</li>
+<li>Beta-blokör (Propranolol) 0.1-0.2 mg/kg IV → infundibüler spazm↓</li>
+<li>Fenilefrin (refrakter) → SVR↑</li>
+</ol>
+`},{id:48,cat:'strateji',priority:4,title:'Kurtarma Soruları — Hocaya Göre',tags:'kurtarma,sınav,hoca,Yakup,Embiya,Erol,Beril,Ali,Mukaddes,Gökçe,Filiz,Burcu,Elif',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Hoca</th><th>Karakteristik Soruları / Beklentileri</th></tr></thead>
+<tbody>
+<tr><td><strong>Yakup Aslan</strong></td><td>Na↓+K↑+Glukoz↓ → KAH (BIRAKIRIM diyor!) • İyonize Ca bak (total yanıltıcı!) • ABO/Rh uyuşmazlığı • Mukoza → ağız içi+sklera • KDZ → göğüsten • ESR = Erythrocyte Sedimentation Rate</td></tr>
+<tr><td><strong>Embiya Dilber</strong></td><td>Dehidrasyon ilk adım = 20 mL/kg SF bolus • Hiperpotasemi sırası: Ca Glukonat→İnsülin+Dex→Salbutamol→NaHCO₃ • DKA glukoz sınırı neden 200 • Fallot hipoksik spell tedavisi • DOZLARI EZBERLE</td></tr>
+<tr><td><strong>Erol Erduran</strong></td><td>Digoksin toks. en sık neden = Hipokalemi • Digoksin + IV Ca = KESİN KONTRENDİKE (stone heart!) • K vit eksikliği → PT kontrolü 4 SAAT sonra • KKY'de en erken = taşikardi + pulsus alternans • HÜS'te AB verilmez (Stx↑)</td></tr>
+<tr><td><strong>Beril Dilber</strong></td><td>Status protokolü (ABC→KŞ→Benzo→Fenitoin YAVAŞ→Fenobarbital) • Status en düzeltilebilir neden = Hipoglisemi • GBS vs TM farkı • GBS'de steroid ZARAR VERİR</td></tr>
+<tr><td><strong>Ali Cansu</strong></td><td>GBS vs TM → TM'de seviye veren duyu kaybı+mesane • Menenjit &lt;1 yaş = fontanel bombesi • SP'den uzaklaştıran = aile öyküsü+progresif kötüleşme • SIRS 4 kriterden 2'si • Serebellar bulgular (11 madde)</td></tr>
+<tr><td><strong>Gül Şalcı</strong></td><td>Enürezis → alarm 1. tercih (%65-75) • Desmopressin relaps %60-70, su kısıtla! • İmipramin kardiyotoksik! • Status dozlarını tam say</td></tr>
+<tr><td><strong>Mukaddes Kalyoncu</strong></td><td>KKK 9. aya eklendi! • Metabolik hastalık 6 bulgusu • Hipertiroidi+TSH adenomu • Kağıtta yazan cevabı ver, ekstra söyleme → eksi!</td></tr>
+<tr><td><strong>Gökçe Pınar</strong></td><td>İTP'de PY → BİR ŞEY GÖRMEZSİNİZ! (dev trombosit olabilir, blast varsa lösemi) • Steroid YE ETKİLERİ: Cushing, osteoporoz, büyüme geriliği, immünosüpresyon</td></tr>
+<tr><td><strong>Emine Ayça</strong></td><td>Topuk kanı 6 hastalık: FKÜ, K.Hipotiroidi, Biyotinidaz, KF(IRT), KAH(17-OHP), Hemoglobinopatiler • Önemli noktaları atlamayın yeter</td></tr>
+<tr><td><strong>Filiz Aktürk</strong></td><td>Öksürük+ateş ön tanıları (ateşli olanları say!) • YD baş travması: Kaput→sütür geçer, Sefal→sütürde durur, Subgaleal→hayati tehdit • Hipomagnezemi semptomlu → IV Mg SO₄ • Sistematik say, her adımı söyle</td></tr>
+<tr><td><strong>Fevziye Başkan</strong></td><td>Uzamış sarılık: İndirekt→anne sütü/hipotiroidi; Direkt→bilyer atrezi (Kasai &lt;60 günde!) • İYE gram(+) eşiği = 2×10⁴</td></tr>
+<tr><td><strong>Mustafa İmamoğlu</strong></td><td>4 günlük bebek ateşi ilk 2 ön tanı söylenmezse 0 puan → Dehidratasyon + Sepsis!</td></tr>
+<tr><td><strong>Burcu Güven</strong></td><td>Tekrarlayan AC enfeksiyonu nedenleri: İmmün yetmezlik, KF, PCD, KKH, VUR, yabancı cisim, astım, GÖR • İpucu veriyor</td></tr>
+<tr><td><strong>Merve Kişioğlu</strong></td><td>Septik şokta güncel sıvı = Ringer Laktat • Aşı takvim değişikliklerini biliyor mu diye soruyor</td></tr>
+<tr><td><strong>Elif Bahat</strong></td><td>Nefrotik+steroid → TB dışla! • Artrit etiyolojisi grupla (travma/enfeksiyon/romato/hemato/malignite) • Ödemli çocuk: nefrotik/nefritik/kardiyak/karaciğer</td></tr>
+<tr><td><strong>Sevim Şahin</strong></td><td>GBS vs TM → TM'de seviye veren duyu kaybı söyle! • Nörolojik muayene basamakları</td></tr>
+<tr><td><strong>Fazıl Orhan</strong></td><td>Patogenez soruyor (ürtiker, Fallot, pnömoni) • FM bulguları + grafi yorumu • Kendi sorularını çekmemeye çalışın!</td></tr>
+</tbody>
+</table></div>
+`},{id:49,cat:'strateji',priority:4,title:'Sınav Stratejisi ve İşleyişi',tags:'strateji,sınav,format,altın kurallar,OTÖ',content:`
+<p><strong>Sınav Formatı:</strong></p>
+<ul>
+<li>3-4 kişi odaya girer, liste sırasına göre</li>
+<li>Ortadaki A4 kağıtlardan soru çekilir</li>
+<li>Genelde 2 soru: 1 OTÖ tarzı + 1 hocanın kendi sorusu</li>
+<li>Kurtarma sorusu: geçme/kalma sınırında belirleyici</li>
+</ul>
+<p><strong>12 Altın Kural:</strong></p>
+<ol class="content" style="padding-left:18px">
+<li>Teorik sınavdan en az <strong>70+</strong> alın</li>
+<li>OTÖ sorularını birebir çalışın</li>
+<li>Sistematik: Ön tanılar → Öykü → FM → Lab → Ayırıcı → Tedavi</li>
+<li>Tedavi dozlarını ezberleyin (Embiya, Yakup)</li>
+<li>Kurtarma sorularını ÇOK İYİ bilin</li>
+<li>Kağıtta yazanı söyleyin (Mukaddes, Filiz) — ekstra söylemeyin</li>
+<li>GBS vs TM her döngüde soruluyor</li>
+<li>Hemogram yorumlama, PY, MCV'ye göre anemiler</li>
+<li>Mukaddes: Seminer Odasında sınav, geç kalmayın</li>
+<li>Pratiklere katılın (Yakup, Mustafa İmamoğlu)</li>
+<li>Soruyu okuyan hoca ikinci kez OKUMAYABILIR — iyi dinleyin</li>
+<li>Bilmediğini sallamayın — Mukaddes soru herkese döner</li>
+</ol>
+<h4 class="h-section">📋 Sınav Akışı</h4>
+<ol class="content" style="padding-left:18px">
+<li>Konu çek → <strong>1 dk okuma süresi</strong> → zihinsel hazırlık</li>
+<li>Sistematik yanıt: <strong>Etyoloji → Klinik → Tanı → Tedavi → Komplikasyon</strong></li>
+<li>Kurtarma sorusu sorulursa: Kısa, net, ezbere cevap ver</li>
+<li>"Bilmiyorum" DEME → "şüphe edilecek durumlar şunlardır..." diyerek çerçevele</li>
+</ol>
+<div class="info-box"><strong>Her soruyu bitirmek için şablon:</strong> ①Neden (etyoloji/patofizyoloji) ②Ne görürüz (klinik) ③Nasıl tanırız (lab/görüntüleme) ④Ne yaparız (tedavi + dozlar) ⑤Ne olabilir (komplikasyon)</div>
+<h4 class="h-section">📋 Yeni Hoca Taktikleri (3. Döngü PDF'den)</h4>
+<ul>
+<li><strong>Ön tanı sorusunda:</strong> Ateşle birlikte olanları say (sadece semptom yapanları değil)</li>
+<li><strong>Elektrolit sorusunda:</strong> Hepsini ayrı ayrı say — "elektrolitler" deme, Na, K, Ca, Mg, P de!</li>
+<li><strong>Serebral palsi sorularında:</strong> SP'den uzaklaştıran bulgu = aile/kardeş öyküsü + progresif kötüleşme</li>
+<li><strong>Muhakkak söyle:</strong> Böbrek üstü bezi yetmezliği (Na↓+K↑+glukoz↓)</li>
+<li><strong>İyonize kalsiyum:</strong> Kan gazından bak (total Ca bekletemezsin)</li>
+<li><strong>Pediatrik üçgen + ABCDE</strong> → ikisini birlikte kullan</li>
+<li><strong>Mukaddes hocada:</strong> Soruyu tekrar okumuyor — iyi dinle, lab değerlerini okuduğu sırada normal mi anla</li>
+<li><strong>Bilmiyorsanız:</strong> Mukaddes hocaya sallamayın — ordan sormaya başlıyor</li>
+</ul>
+`},{id:50,cat:'kardiyoloji',priority:3,title:'Konjenital Kalp Hastalıkları — Siyanotik + Asiyanotik',tags:'KKH,Fallot,TGA,siyanotik,asiyanotik,VSD,ASD,PDA,hipoksik spell,koarktasyon',content:`
+<h4 class="h-section">🔵 Siyanotik KKH — Sağ→Sol Şant / Mixing</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Hastalık</th><th>Anatomi / Mekanizma</th><th>Anahtar Özellik</th></tr></thead>
+<tbody>
+<tr><td><strong>Fallot Tetralojisi (en sık siyanotik!)</strong></td><td>①VSD ②RVOTO (infundibuler stenoz) ③Binici aorta ④RVH → R→L şant</td><td>Siyanoz + hipoksik spell. EKG: RAD+RVH. Grafi: tahta pabuç kalp (coeur en sabot)</td></tr>
+<tr><td><strong>TGA (Transpozisyon)</strong></td><td>Aorta RV'den, PA LV'den çıkıyor → 2 paralel dolaşım</td><td>Doğumda ağır siyanoz. DUKTUS BAĞIMLI → PGE₁ hemen! Balon septostomi (Rashkind). En acil KKH!</td></tr>
+<tr><td><strong>Triküspid Atrezisi</strong></td><td>Triküspid kapak yok → RV hipoplazisi. ASD + VSD zorunlu</td><td>Siyanoz + RAD yok (aksine LAD). Tek ventrikül fizyolojisi</td></tr>
+<tr><td><strong>TAPVD</strong></td><td>Pulmoner venler sol atriyuma dönmez → sağ kalbe dönüyor. ASD zorunlu</td><td>Ağır siyanoz + pulmoner ödem. "Kardan adam" kalp grafisi (suprakardiyak tip)</td></tr>
+<tr><td><strong>Hipoplastik Sol Kalp</strong></td><td>LV, mitral/aortik kapaklar hipoplastik → duktus bağımlı sistemik</td><td>Doğumda düzelmiş görünür → duktus kapanınca kritik şok. PGE₁ hayat kurtarır!</td></tr>
+<tr><td><strong>Truncus Arteriosus</strong></td><td>Tek büyük arter çıkışı → aorta+PA ayrışmamış</td><td>Erken KKY + siyanoz. VSD ile birlikte</td></tr>
+</tbody>
+</table></div>
+<div class="danger-box"><strong>Duktal bağımlı siyanotik KKH:</strong> TGA, Hipoplastik Sol Kalp, Pulmoner Atrezi → Duktus kapanınca kritik! → <strong>PGE₁ (Prostaglandin E₁) hemen başla!</strong></div>
+
+<h4 class="h-section">❤️ Fallot Tetralojisi — Detay</h4>
+<ul>
+<li><strong>4 bileşen:</strong> VSD + Sağ ventrikül çıkış yolu obstrüksiyonu (RVOTO) + Binici aorta + Sağ ventrikül hipertrofisi</li>
+<li>Siyanoz şiddeti RVOTO şiddetine bağlı (hafif stenoz → az siyanoz, ağır → ağır siyanoz)</li>
+<li><strong>Paradoks:</strong> Pulmoner stenoz arttıkça üfürüm AZALIR (kan akımı azalır)!</li>
+<li>EKG: Sağ aks sapması (RAD) + Sağ ventrikül hipertrofisi (RVH)</li>
+<li>Grafi: Tahta pabuç kalp (coeur en sabot) — pulmoner ark küçük, RVH nedeniyle kalp yukarı kalkmış</li>
+</ul>
+<div class="step"><div class="step-num">!</div><div class="step-body"><strong>Hipoksik Spell (TET spell) Tedavisi — sırayla:</strong><br>① Diz-göğüs pozisyonu (SVR↑ → R→L şant↓) ② %100 O₂ ③ IV sıvı bolus ④ Morfin 0.1-0.2 mg/kg (infundibuler spazm↓) ⑤ NaHCO₃ (asidozu düzelt) ⑥ Propranolol 0.1-0.2 mg/kg IV (infundibüler spazm↓) ⑦ Fenilefrin (refrakter, SVR↑)</div></div>
+
+<h4 class="h-section">🔴 Asiyanotik KKH — Sol→Sağ Şant / Obstrüktif</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Hastalık</th><th>Mekanizma</th><th>Klinik / Anahtar</th></tr></thead>
+<tbody>
+<tr><td><strong>VSD (en sık KKH!)</strong></td><td>Sol→Sağ şant → pulmoner hipervolemi → KKY</td><td>Holosistolik üfürüm sol alt sternal. Büyük VSD → emmeme, KKY 1-3 ayda. Spontan kapanma %50 (&lt;3 mm)</td></tr>
+<tr><td><strong>ASD</strong></td><td>Atriyal septum defekti → Sol→Sağ şant</td><td>Genellikle asemptomatik. S2 sabit çiftleşmesi! Paradoks emboli riski. Ostium secundum en sık</td></tr>
+<tr><td><strong>PDA</strong></td><td>Duktus arteriyozus kapanmamış → Aorta→PA → Sol→Sağ</td><td>Prematürede sık! Sürekli "makine üfürümü" sol klavikula altında. İndometazin/İbuprofen → kapanma. Prematüre: spontan kapanma bekle</td></tr>
+<tr><td><strong>AVSD</strong></td><td>ASD+VSD+ortak AV kapak → Down sendromu ile %40 birlikte</td><td>Erken KKY. Down sendromlu çocukta mutlaka kardiyoloji</td></tr>
+<tr><td><strong>Koarktasyon (CoA)</strong></td><td>Aort darlığı (ligamentum arteriosum bölgesi) → üst ekstremite HT + alt ekstremite nabız↓</td><td>Kollar ile bacaklar arasında nabız farkı! Baş ağrısı+epistaksis. Grafi: kostalar altında çentiklenme (kollateral). Ağır YD: Duktal bağımlı!</td></tr>
+<tr><td><strong>Pulmoner Stenoz</strong></td><td>Pulmoner kapak stenozu → RV baskı yükü</td><td>Ejeksiyon klik + sistolik üfürüm 2. sol IKA. Hafif: asemptomatik. Ağır: siyanoz (sağ→sol foramen ovale)</td></tr>
+<tr><td><strong>Aort Stenozu</strong></td><td>Aortik kapak stenozu → LV baskı yükü</td><td>Ejeksiyon klik + üfürüm 2. sağ IKA. Ağır: egzersizle senkop/ani ölüm!</td></tr>
+</tbody>
+</table></div>
+<div class="pearl">Eisenmenger Sendromu: Uzun süren Sol→Sağ şant → pulmoner HT → şant tersine döner (Sağ→Sol) → siyanoz. Artık operabl değil!</div>
+<div class="info-box"><strong>Üfürüm değerlendirmesi:</strong> Holosistolik = VSD/MR/TR • Ejeksiyon sistolik = PS/AS/ASD • Sürekli = PDA • Diyastolik = AR/MS (patolojik!)</div>
+`},{id:51,cat:'nefro',priority:3,title:'Ödemli Çocuğa Yaklaşım',tags:'ödem,nefrotik,nefritik,kardiyak,karaciğer,proteinüri,hematüri,hipoalbüminemi,Elif Bahat',content:`
+<div class="warn"><strong>Elif Bahat soruyor!</strong> Ödemli çocukta sistematik gruplandırmayı bekliyor: Nefrotik / Nefritik / Kardiyak / Karaciğer / Beslenme / Diğer</div>
+<h4 class="h-section">🔍 Etiyoloji Gruplandırması (Ezberle!)</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Grup</th><th>Etiyoloji</th><th>Anahtar Bulgu</th></tr></thead>
+<tbody>
+<tr><td><strong>Nefrotik (en sık!)</strong></td><td>Minimal Değişim Hst. (%80 çocuk), FSGS, membranöz</td><td>Proteinüri +++ | Hipoalbüminemi | Hiperlipidemi | Ödem belden aşağı</td></tr>
+<tr><td><strong>Nefritik</strong></td><td>Post-streptokokal GN, IgA nefropatisi, SLE</td><td>Hematüri (çay rengi idrar) | HT | Oligüri | Proteinüri (az)</td></tr>
+<tr><td><strong>Kardiyak</strong></td><td>KKY, kardiyomiyopati, KKH</td><td>Kardiomegali | Hepatomegali | JVB↑ | Ortopne | S3 galo</td></tr>
+<tr><td><strong>Karaciğer</strong></td><td>Siroz, kronik hepatit, Wilson</td><td>Asit + ödem | Sarılık | Palmar eritem | Albumin↓ | PT uzun</td></tr>
+<tr><td><strong>Beslenme</strong></td><td>Kwashiorkor, malabsorpsiyon</td><td>Protein malnutrisyon | Albumin↓ | Kas erimesi + ödem (paradoks!)</td></tr>
+<tr><td><strong>Diğer</strong></td><td>Anjiyoödem (alerjik), lenfödem, lokal venöz/lenfatik obstr.</td><td>Pitting değil | Ani başlangıç (anjiyoödem)</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">📋 Yaklaşım Basamakları</h4>
+<div class="step"><div class="step-num">1</div><div class="step-body"><strong>Ödem tipi:</strong> Pitting mi? Yüz tutulumu var mı (nefrotik → sabah yüz ödemi!)? Asit var mı?</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body"><strong>İdrar analizi:</strong> Dipstik → Proteinüri (nefrotik) | Hematüri (nefritik) | Spot idrarda Protein/Kreatinin oranı</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body"><strong>Kan tetkiki:</strong> Albumin, KC fonksiyon, CBC, BUN/Kre, kolesterol, kompleman (C3↓ → nefritik!)</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body"><strong>Kardiyak değerlendirme:</strong> EKO, KVP, karaciğer büyüklüğü</div></div>
+<h4 class="h-section">🫧 Nefrotik Sendrom — Özet</h4>
+<ul>
+<li>Tanı kriterleri: Proteinüri &gt;40 mg/m²/saat (veya sab. spot Prot/Kre &gt;2) + Hipoalbüminemi &lt;2.5 g/dL + Ödem</li>
+<li>Çocukta %80 Minimal Değişim Hastalığı → steroid duyarlı</li>
+<li>Komplikasyonlar: Hiperkoagülabilite (AT-III kayıplar → tromboz!), enfeksiyon (Ig kaybı → özellikle pnömokok!), hiperlipidemi</li>
+<li>Tedavi: Prednizolon 60 mg/m²/gün (max 60 mg) ×4-6 hf → 40 mg/m²/gün (günaşırı) ×4-6 hf</li>
+</ul>
+<div class="danger-box"><strong>STEROİD BAŞLAMADAN ÖNCE TB DIŞLA!</strong> Tüberkülin testi (TST) zorunlu. İmmünosüpresyon → latent TB aktivasyonu → ölümcül olabilir! (Elif Bahat + Nefrotik hocalarda kritik!)</div>
+<h4 class="h-section">🩸 Nefritik Sendrom — Özet</h4>
+<ul>
+<li>Post-Streptokokal GN: Boğaz/deri GAS enfeksiyonundan 1-3 hafta sonra (boğaz 1-2 hf, deri 3-6 hf)</li>
+<li>C3 ↓↓ (4-8 hf sonra normale döner) | ASLO↑ | Anti-DNaz B↑</li>
+<li>Tedavi: Destekleyici (sıvı kısıtlama, HT tedavisi, diüretik). AB sadece aktif enfeksiyon varsa</li>
+<li>Prognoz: Çocukta genellikle iyi. C3 8 hf sonra normale dönmezse → biyopsi</li>
+</ul>
+`},{id:52,cat:'enfeksiyon',priority:3,title:'Artritli Çocuğa Yaklaşım + Lupus (SLE)',tags:'artrit,JIA,septik artrit,reaktif artrit,ARA,SLE,lupus,ANÜ,Elif Bahat',content:`
+<div class="warn"><strong>Elif Bahat soruyor!</strong> Artrit nedenlerini gruplandırarak saymanızı bekliyor. Lupus'tan steroid başlamadan TB dışlama soruyor!</div>
+<h4 class="h-section">🦵 Artrit Etiyolojisi — Gruplandırarak Say!</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Grup</th><th>Etiyoloji</th><th>Anahtar</th></tr></thead>
+<tbody>
+<tr><td><strong>Travma</strong></td><td>Hemartröz, menisküs, ligaman</td><td>Öykü! Spor aktivitesi</td></tr>
+<tr><td><strong>Enfeksiyon</strong></td><td>Septik artrit (S.aureus en sık), reaktif artrit (post-enfeksiyöz), viral (parvovirus, EBV), ARA</td><td>Ateş + tek eklem = septik artrit dışla!</td></tr>
+<tr><td><strong>Romatoloji</strong></td><td>JIA, ARA, SLE, vaskülitler (Kawasaki, IgA), PFAPA</td><td>Uzun süreli, sistemik bulgular</td></tr>
+<tr><td><strong>Hematoloji</strong></td><td>Hemofili (hemartröz), orak hücre, lösemi</td><td>Periartriküler ağrı → lösemi!!</td></tr>
+<tr><td><strong>Malignite</strong></td><td>Lösemi (kemik ağrısı → artrit gibi), kemik tümörleri</td><td>Gece ağrısı + kilo kaybı + LAP</td></tr>
+<tr><td><strong>Ortopedik</strong></td><td>Perthes, SCH, Osgood-Schlatter</td><td>Tek eklem, yaşa özgü lokalizasyon</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">🦠 Septik Artrit vs Reaktif Artrit</h4>
+<div class="tbl-wrap"><table>
+<thead><tr><th>Özellik</th><th>Septik Artrit</th><th>Reaktif Artrit</th></tr></thead>
+<tbody>
+<tr><td>Başlangıç</td><td>Ani, ateş yüksek</td><td>Enfeksiyondan 1-4 hafta sonra</td></tr>
+<tr><td>Eklem sayısı</td><td>Tek (monoartriti)</td><td>Birkaç (asimetrik)</td></tr>
+<tr><td>Eklem</td><td>Çok sıcak, şiş, ağrılı, hareket YOK</td><td>Daha az dramatik</td></tr>
+<tr><td>Lab</td><td>WBC↑↑, ESR↑↑, CRP↑↑ — Eklem sıvısı WBC &gt;50.000</td><td>ESR↑, hafif WBC↑</td></tr>
+<tr><td>Tedavi</td><td>ACİL cerrahi drenaj + IV antibiyotik</td><td>NSAİİ, takip</td></tr>
+</tbody>
+</table></div>
+<h4 class="h-section">📋 JIA — Juvenil İdiyopatik Artrit</h4>
+<ul>
+<li><strong>Oligoartiküler (en sık!):</strong> ≤4 eklem, büyük eklem, ANA(+), <strong>göz muayenesi şart (üveit!)</strong></li>
+<li><strong>Poliartriküler:</strong> ≥5 eklem. RF(+) → ağır prognoz</li>
+<li><strong>Sistemik (Still):</strong> Günde 2 pik ateş + salmon-pink döküntü + hepatosplenomegali + artrit</li>
+<li><strong>Psöriyatik, entezit ilişkili:</strong> HLA-B27(+) formlar sakroiliyak tutabilir</li>
+</ul>
+<h4 class="h-section">🦋 SLE (Lupus) — Çocukta</h4>
+<ul>
+<li><strong>SLICC kriterleri (≥4/11):</strong> Butterfly rash, diskoid döküntü, oral ülser, fotosensitivite, saçkırılması, serozit, böbrek (proteinüri &gt;500 mg/gün), nöroloji, hemolitik anemi, lökopeni, trombositopeni, ANÜ(+), Anti-dsDNA(+), Anti-Sm(+)</li>
+<li>Laboratuvar: ANÜ (tarama!), Anti-dsDNA (spesifik, hastalık aktivitesi), C3-C4↓, CBC, idrar analizi</li>
+<li>Böbrek tutulumu → Lupus nefriti → ACE inhibitörü + steroid + MMF/siklofosfamid</li>
+</ul>
+<div class="danger-box"><strong>STEROİD BAŞLAMADAN TB DIŞLA!</strong> Lupus + steroid → latent TB aktive olur! TST yap! (Elif Bahat + sıkça sorulan!)</div>
+<div class="pearl">Lupus'ta "kelebek döküntü" — nasolabiyal kıvrımları atlar! (Rosacea ile farkı: rosacea kıvrımları tutabilir)</div>
+`},{id:53,cat:'alerji',priority:3,title:'Astım Atağı — Sınıflandırma + Tedavi',tags:'astım,salbutamol,ipratropium,SABA,steroid,sessiz göğüs,PEF,nebülizasyon,Filiz,Embiya',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Kriter</th><th>Hafif</th><th>Orta</th><th>Ağır</th><th>İmminant Arrest</th></tr></thead>
+<tbody>
+<tr><td>Konuşma</td><td>Cümlelerle</td><td>Kelimelerle</td><td>Sadece kelime</td><td>Konuşamıyor</td></tr>
+<tr><td>Bilinç</td><td>Uyanık</td><td>Ajite</td><td>Çok ajite</td><td>Letarjik/konfüze</td></tr>
+<tr><td>SpO₂</td><td>≥%94</td><td>%91-93</td><td>&lt;%91</td><td>&lt;%91</td></tr>
+<tr><td>Hışıltı</td><td>Exp. sonu</td><td>Belirgin</td><td>Exp+İnsp</td><td><strong>SESSİZ GÖĞÜS!</strong></td></tr>
+<tr><td>Yardımcı kas</td><td>Yok/minimal</td><td>Var</td><td>Belirgin</td><td>Paradoksal</td></tr>
+<tr><td>PEF</td><td>&gt;%70</td><td>%40-70</td><td>&lt;%40</td><td>Ölçülemiyor</td></tr>
+</tbody>
+</table></div>
+<div class="danger-box"><strong>Sessiz göğüs = İMPENDİNG ARREST!</strong> Hava akımı o kadar azalmış ki hışıltı duyulmuyor → HEMEN entübasyon hazırlığı! Paradoksal solunum = solunum kası yorgunluğu → kritik!</div>
+<h4 class="h-section">💊 Tedavi Basamakları</h4>
+<div class="step"><div class="step-num">1</div><div class="step-body"><strong>Hafif (evde):</strong> Salbutamol inhaler 2-4 puf araseptörle, 20 dk arayla 3 kez. Prednizolon 1-2 mg/kg oral (max 40 mg) 3-5 gün. 1 saat sonra değerlendir.</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body"><strong>Orta (acil):</strong> O₂ (SpO₂ ≥%95 hedef). Salbutamol nebül <strong>0.15 mg/kg</strong> (min 2.5 mg, max 5 mg) 20 dk arayla 3 kez. İpratropium bromür 250 μg (&lt;4 yaş) / 500 μg (≥4 yaş). Prednizolon oral <strong>1-2 mg/kg, max 40 mg</strong>.</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body"><strong>Ağır (acil/yatış):</strong> Sürekli O₂. Salbutamol sürekli nebülizasyon. İpratropium her 20 dk ilk 3 doz. IV Metilprednizolon <strong>1-2 mg/kg IV</strong> (max 60 mg). IV Mg SO₄ <strong>40-50 mg/kg</strong> 20 dk'da (max 2 g — bronkodilatatör!). IV Aminofilin 5-6 mg/kg yükleme. Yanıtsız → YBÜ/entübasyon.</div></div>
+<div class="info-box"><strong>Taburculuk kriterleri:</strong> SpO₂ ≥%94 oda havasında + PEF &gt;%70 + klinik stabil → 7 gün sonra kontrol</div>
+<div class="pearl"><strong>Öksürük+ateşle gelen çocukta ön tanılar (ATEŞLE birlikte olanları say!):</strong> Bronşiolit (&lt;2 yaş, RSV) • Viral pnömoni (bilateral) • Bakteriyel pnömoni (tek taraf, yüksek ateş) • Astım atağı (wheezing + öykü)</div>
+`},{id:54,cat:'enfeksiyon',priority:2,title:'Döküntülü Hastalık Eşleşmesi',tags:'döküntü,peteşi,purpura,Kawasaki,meningokoksemi,ARA,SLE,IgA vasküliti,kızamık,su çiçeği,Elif Bahat',content:`
+<div class="tbl-wrap"><table>
+<thead><tr><th>Döküntü Tipi</th><th>Hastalıklar</th><th>Ayırt Edici Özellik</th></tr></thead>
+<tbody>
+<tr><td><strong>Makülopopüler</strong></td><td>Kızamık, kızamıkçık, EBV, ilaç reaksiyonu, Kawasaki, roseola</td><td>EBV+ampisilin → döküntü PATLAR! Kızamık: Koplik lekeleri (bukkal mukoza)</td></tr>
+<tr><td><strong>Veziküler</strong></td><td>Su çiçeği, HSV, el-ayak-ağız hastalığı, zona</td><td>Su çiçeği: farklı evrelerde lezyon (makül+vezikül+kabuk aynı anda). El-ayak-ağız: Coxsackie A16</td></tr>
+<tr><td><strong>Peteşi/Purpura (SOLMAZ!)</strong></td><td><strong>MEMNİNGOKOKSEMİ(!), İTP, lösemi, DIC, IgA vasküliti, vaskülit</strong></td><td>Peteşi+ateş+bilinç değişikliği = ACİL! Meningokoksemi → 0-12 saatte ölüm olabilir!</td></tr>
+<tr><td><strong>Eritema marginatum</strong></td><td>ARA (Akut Romatizmal Ateş)</td><td>Halkamsı, merkezi soluk, gövdede, banyo ile belirginleşir. Majör kriter!</td></tr>
+<tr><td><strong>Kelebek döküntü</strong></td><td>SLE (Lupus)</td><td>Nazolabial kıvrımları ATLAR! Rosacea ile karışır (rosacea kıvrımları tutabilir)</td></tr>
+<tr><td><strong>Palpabl purpura (alt ext.)</strong></td><td>IgA Vasküliti (Henoch-Schönlein)</td><td>Alt ekstremite + kalça. Triad: purpura+karın ağrısı+artrit. ±Renal tutulum</td></tr>
+<tr><td><strong>Çilek dil</strong></td><td>Kızıl, Kawasaki</td><td>Kızıl: boğaz+ateş+perioral solukluk. Kawasaki: ateş≥5 gün+konjonktivit+LAP+el ayak ödem+döküntü</td></tr>
+<tr><td><strong>Ash-leaf makül (hipopigmente)</strong></td><td>Tuberoskleroz</td><td>+epilepsi+kortikal tüberler+şagreen patch. Wood lambası ile görülür</td></tr>
+<tr><td><strong>Café au lait</strong></td><td>NF-1 (Nörofibromatozis)</td><td>≥6 adet + Lisch nodülleri (iris hamartom) + nörofibromlar</td></tr>
+<tr><td><strong>Periorbital ödem + döküntü</strong></td><td>Juvenil dermatomiyozit, nefrotik sendrom</td><td>Heliotrope döküntü (mor gözkapağı) = dermatomiyozit</td></tr>
+</tbody>
+</table></div>
+<div class="danger-box"><strong>Peteşi + Ateş = MENĠNGOKOKSEMĠ dışlanana kadar acil!</strong> İlk dozu acilde ver, LP bekleme! Tedavi: Seftriakson 100 mg/kg/gün IV</div>
+<div class="info-box"><strong>Kawasaki tanı kriterleri (≥5 gün ateş + 4/5 kriter):</strong> ①Konjonktivit (non-pürülan) ②Oral değişiklik (çilek dil, kırmızı dudak, farenjit) ③Döküntü (polimorf) ④El-ayak ödem/eritem/deskuamasyon ⑤Servikal LAP (≥1.5 cm, tek taraflı). Tedavi: IVIG 2 g/kg tek doz + Aspirin</div>
+`}
+];
+
+// ============================================================
+// DOSE DATA
+// ============================================================
+const DOSE_GROUPS = [
+{title:'🚨 Kardiyopulmoner Acil', icon:'🚨', items:[
+{name:'Adrenalin (anafilaksi)',dose:'0.01 mg/kg IM (1:1000), max 0.3 mg çocuk'},
+{name:'Adrenalin (YD)',dose:'0.01-0.03 mg/kg IV (1:10.000)'},
+{name:'Atropin',dose:'0.02 mg/kg IV (min 0.1 mg)'},
+{name:'Defibrilasyon',dose:'2 J/kg → 4 J/kg'}
+]},{title:'🧠 Nöbet',icon:'🧠',items:[
+{name:'Diazepam',dose:'0.3 mg/kg IV (max 10mg) / 0.5 mg/kg rektal'},
+{name:'Midazolam',dose:'0.2 mg/kg IM/bukkal/IV'},
+{name:'Fenitoin',dose:'20 mg/kg IV (MAX 1 mg/kg/dk, yavaş!)'},
+{name:'Fenobarbital',dose:'20 mg/kg IV'},
+{name:'Valproat',dose:'20-40 mg/kg IV'},
+{name:'Levetirasetam',dose:'20-60 mg/kg IV'}
+]},{title:'💧 Sıvı/Elektrolit',icon:'💧',items:[
+{name:'Bolus SF/RL',dose:'20 mL/kg, 5-20 dk'},
+{name:'Hipoglisemi (YD)',dose:'%10 Dex 2 mL/kg IV bolus'},
+{name:'İdame hipoglisemi (YD)',dose:'8 mg/kg/dk infüzyon'},
+{name:'Ca Glukonat %10',dose:'0.5-1 mL/kg IV yavaş (bradikardi!)'},
+{name:'NaHCO₃',dose:'1-2 mEq/kg IV'},
+{name:'KCl',dose:'0.3-0.5 mEq/kg/saat IV (kardiyak monitör!)'}
+]},{title:'🦠 Enfeksiyon',icon:'🦠',items:[
+{name:'Ampisilin',dose:'200-400 mg/kg/gün IV (4-6 doz)'},
+{name:'Gentamisin',dose:'5-7.5 mg/kg/gün IV (1 doz)'},
+{name:'Seftriakson',dose:'50-100 mg/kg/gün IV (1-2 doz)'},
+{name:'Sefotaksim',dose:'150-200 mg/kg/gün IV (3-4 doz)'},
+{name:'Vankomisin',dose:'40-60 mg/kg/gün IV (4 doz)'},
+{name:'Benzatin PG',dose:'600.000 Ü (<27 kg) / 1.200.000 Ü (≥27 kg) IM tek doz'}
+]},{title:'💉 Steroidler',icon:'💉',items:[
+{name:'Prednizolon',dose:'1-2 mg/kg/gün oral (nefrotik: 2 mg/kg)'},
+{name:'Metilprednizolon IV',dose:'20-30 mg/kg/gün (ADEM, ağır astım)'},
+{name:'Hidrokortizon kriz',dose:'50-100 mg/m² IV (stres dozu)'},
+{name:'Astım oral',dose:'1-2 mg/kg (max 40-60 mg)'}
+]},{title:'💊 Digoksin',icon:'💊',items:[
+{name:'YD dijitalizasyon',dose:'20-30 μg/kg IV | 25-35 μg/kg oral'},
+{name:'Süt çocuğu dijitalizasyon',dose:'30-50 μg/kg IV | 35-60 μg/kg oral'},
+{name:'>2 yaş dijitalizasyon',dose:'20-40 μg/kg IV | 25-50 μg/kg oral'},
+{name:'İdame',dose:"TDD'nin ¼-⅓'ü, günde 2 doz"},
+{name:'Terapötik aralık',dose:'0.8-2.0 ng/mL (son dozdan ≥6-8 saat sonra)'}
+]},{title:'⚗️ Diğer Acil',icon:'⚗️',items:[
+{name:'Ondansetron',dose:'0.15 mg/kg IV/oral'},
+{name:'Mannitol',dose:'0.5-1 g/kg IV'},
+{name:'İnsülin DKA',dose:'0.05-0.1 Ü/kg/saat IV (BOLUS YOK!)'},
+{name:'Glukagon (anafilaksi)',dose:'20-30 μg/kg IV (beta-blokör varsa)'},
+{name:'Deferoksamin',dose:'15 mg/kg/saat IV'},
+{name:'Kafein sitrat (YD)',dose:'20 mg/kg yükleme, 5 mg/kg/gün idame'},
+{name:'IVIG (İTP/immün)',dose:'0.8-1 g/kg/gün, 1-2 gün'},
+{name:'Salbutamol (hiperpot.)',dose:'0.15 mg/kg nebül'}
+]}
+];
+
+// ============================================================
+// THEME
+// ============================================================
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#1a3585' : '#0a0c14');
+}
+(function initTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.classList.add('light');
+    document.getElementById('theme-toggle').textContent = '☀️';
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a3585');
+  }
+})();
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  bookmarks: new Set(JSON.parse(localStorage.getItem('bookmarks') || '[]')),
+  learned: new Set(JSON.parse(localStorage.getItem('learned') || '[]')),
+  openCards: new Set(JSON.parse(localStorage.getItem('openCards') || '[]')),
+  currentPage: 'home',
+  homeFilter: 'all',
+  homeCatFilter: 'all',
+  allOpen: false
+};
+
+function saveState() {
+  localStorage.setItem('bookmarks', JSON.stringify([...state.bookmarks]));
+  localStorage.setItem('learned', JSON.stringify([...state.learned]));
+  localStorage.setItem('openCards', JSON.stringify([...state.openCards]));
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (btn) btn.classList.add('active');
+  state.currentPage = page;
+  const titles = {
+    home: 'KTÜ Pediatri Sınav',
+    topics: 'Tüm Konular',
+    doses: 'Kritik Dozlar',
+    search: 'Arama',
+    saved: 'Kaydettiklerim'
+  };
+  document.getElementById('header-title').textContent = titles[page];
+  // Scroll to top
+  document.getElementById('main').scrollTo(0, 0);
+  if (page === 'saved') renderSaved();
+  if (page === 'home') updateStats();
+}
+
+// ============================================================
+// CARD RENDERING
+// ============================================================
+function getPriorityBadge(p) {
+  const badges = {
+    4: '<span class="badge badge-p4">Çok Yüksek</span>',
+    3: '<span class="badge badge-p3">Yüksek</span>',
+    2: '<span class="badge badge-p2">Orta-Yüksek</span>',
+    1: '<span class="badge badge-p1">Orta</span>'
+  };
+  return badges[p] || '';
+}
+
+function renderCard(topic, options = {}) {
+  const isOpen = state.openCards.has(topic.id) || options.forceOpen;
+  const isBookmarked = state.bookmarks.has(topic.id);
+  const isLearned = state.learned.has(topic.id);
+  const content = options.highlightFn ? options.highlightFn(topic.content) : topic.content;
+
+  return `<div class="card pc${topic.priority}${isOpen ? ' open' : ''}" id="card-${topic.id}-${options.suffix || 'main'}">
+    <div class="card-header" onclick="toggleCard(${topic.id}, '${options.suffix || 'main'}')">
+      <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+        ${isLearned ? '<span class="learned-mark">✓</span>' : ''}
+        ${isBookmarked ? '<span class="bookmark-mark">⭐</span>' : ''}
+        <span class="card-title">${topic.id}. ${topic.title}</span>
+      </div>
+      <div class="card-badges">
+        ${getPriorityBadge(topic.priority)}
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="content" style="margin-top:12px;">${content}</div>
+      <div class="card-actions">
+        <button class="btn-sm btn-bookmark${isBookmarked ? ' active' : ''}" onclick="toggleBookmark(${topic.id},'${options.suffix || 'main'}')">
+          ⭐ ${isBookmarked ? 'Kaydedildi' : 'Kaydet'}
+        </button>
+        <button class="btn-sm btn-learned${isLearned ? ' active' : ''}" onclick="toggleLearned(${topic.id},'${options.suffix || 'main'}')">
+          ✓ ${isLearned ? 'Öğrenildi' : 'Öğrendim'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleCard(id, suffix) {
+  suffix = suffix || 'main';
+  const card = document.getElementById(`card-${id}-${suffix}`);
+  if (!card) return;
+  const isOpen = card.classList.contains('open');
+  if (isOpen) {
+    card.classList.remove('open');
+    state.openCards.delete(id);
+  } else {
+    card.classList.add('open');
+    state.openCards.add(id);
+  }
+  saveState();
+}
+
+function toggleBookmark(id, suffix) {
+  if (state.bookmarks.has(id)) {
+    state.bookmarks.delete(id);
+    showToast('Kaydedildi kaldırıldı');
+  } else {
+    state.bookmarks.add(id);
+    showToast('⭐ Kaydedildi!');
+  }
+  saveState();
+  updateStats();
+  refreshCardButtons(id, suffix);
+}
+
+function toggleLearned(id, suffix) {
+  if (state.learned.has(id)) {
+    state.learned.delete(id);
+    showToast('Öğrenildi kaldırıldı');
+  } else {
+    state.learned.add(id);
+    showToast('✓ Öğrenildi!');
+  }
+  saveState();
+  updateStats();
+  refreshCardButtons(id, suffix);
+}
+
+function refreshCardButtons(id, suffix) {
+  const isBookmarked = state.bookmarks.has(id);
+  const isLearned = state.learned.has(id);
+  // Update all instances of this card
+  document.querySelectorAll(`[id^="card-${id}-"]`).forEach(card => {
+    const bmark = card.querySelector('.btn-bookmark');
+    const learn = card.querySelector('.btn-learned');
+    const lmark = card.querySelector('.learned-mark');
+    const bkmark = card.querySelector('.bookmark-mark');
+    if (bmark) {
+      bmark.classList.toggle('active', isBookmarked);
+      bmark.textContent = (isBookmarked ? '⭐ Kaydedildi' : '⭐ Kaydet');
+    }
+    if (learn) {
+      learn.classList.toggle('active', isLearned);
+      learn.textContent = (isLearned ? '✓ Öğrenildi' : '✓ Öğrendim');
+    }
+    const header = card.querySelector('.card-header');
+    if (header) {
+      if (lmark) lmark.style.display = isLearned ? '' : 'none';
+      if (bkmark) bkmark.style.display = isBookmarked ? '' : 'none';
+    }
+  });
+  // If saved page is active, re-render
+  if (state.currentPage === 'saved') renderSaved();
+}
+
+// ============================================================
+// HOME PAGE
+// ============================================================
+function updateStats() {
+  document.getElementById('stat-total').textContent = TOPICS.length;
+  document.getElementById('stat-bookmarked').textContent = state.bookmarks.size;
+  document.getElementById('stat-learned').textContent = state.learned.size;
+  const pct = Math.round((state.learned.size / TOPICS.length) * 100);
+  document.getElementById('stat-pct').textContent = '%' + pct;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = state.learned.size + ' / ' + TOPICS.length;
+}
+
+function initHomePage() {
+  // Category chips
+  const catChips = document.getElementById('home-cat-chips');
+  catChips.innerHTML = '<div class="chip active" data-cat="all" onclick="setCatFilter(\'all\',this)">Tümü</div>';
+  Object.entries(CATEGORIES).forEach(([key, label]) => {
+    const hasTopics = TOPICS.some(t => t.cat === key);
+    if (hasTopics) {
+      catChips.innerHTML += `<div class="chip" data-cat="${key}" onclick="setCatFilter('${key}',this)">${label}</div>`;
+    }
+  });
+
+  // Priority chips
+  document.getElementById('home-priority-chips').querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.getElementById('home-priority-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      state.homeFilter = this.dataset.filter;
+      renderHomeTopics();
+    });
+  });
+
+  renderHomeTopics();
+  updateStats();
+}
+
+function setCatFilter(cat, el) {
+  document.getElementById('home-cat-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.homeCatFilter = cat;
+  renderHomeTopics();
+}
+
+function renderHomeTopics() {
+  let filtered = TOPICS.filter(t => {
+    const pMatch = state.homeFilter === 'all' || t.priority === parseInt(state.homeFilter.replace('p',''));
+    const cMatch = state.homeCatFilter === 'all' || t.cat === state.homeCatFilter;
+    return pMatch && cMatch;
+  });
+
+  const container = document.getElementById('home-topics');
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="no-results">Bu filtreye uygun konu bulunamadı</div>';
+    return;
+  }
+  container.innerHTML = filtered.map(t => renderCard(t, {suffix:'home'})).join('');
+}
+
+// ============================================================
+// TOPICS PAGE
+// ============================================================
+function initTopicsPage() {
+  const container = document.getElementById('topics-list');
+  let html = '';
+  Object.entries(CATEGORIES).forEach(([key, label]) => {
+    const catTopics = TOPICS.filter(t => t.cat === key);
+    if (catTopics.length === 0) return;
+    html += `<div class="cat-header">${label}</div>`;
+    html += catTopics.map(t => renderCard(t, {suffix:'topics'})).join('');
+  });
+  container.innerHTML = html;
+}
+
+function toggleAllCards() {
+  state.allOpen = !state.allOpen;
+  const btn = document.getElementById('toggle-all-btn');
+  btn.textContent = state.allOpen ? 'Tümünü Kapat' : 'Tümünü Aç';
+
+  TOPICS.forEach(t => {
+    const card = document.getElementById(`card-${t.id}-topics`);
+    if (!card) return;
+    if (state.allOpen) {
+      card.classList.add('open');
+      state.openCards.add(t.id);
+    } else {
+      card.classList.remove('open');
+      state.openCards.delete(t.id);
+    }
+  });
+  saveState();
+}
+
+// ============================================================
+// DOSES PAGE
+// ============================================================
+function initDosesPage() {
+  const grid = document.getElementById('doses-grid');
+  grid.innerHTML = DOSE_GROUPS.map(g => `
+    <div class="dose-card">
+      <h4>${g.icon} ${g.title}</h4>
+      ${g.items.map(i => `
+        <div class="dose-item">
+          <div class="dose-name">${i.name}</div>
+          <div class="dose-val">${i.dose}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// SEARCH PAGE
+// ============================================================
+let searchDebounce;
+function initSearchPage() {
+  const input = document.getElementById('search-input');
+  const clearBtn = document.getElementById('search-clear');
+
+  input.addEventListener('input', function() {
+    clearBtn.classList.toggle('visible', this.value.length > 0);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => doSearch(this.value), 200);
+  });
+}
+
+function clearSearch() {
+  const input = document.getElementById('search-input');
+  input.value = '';
+  document.getElementById('search-clear').classList.remove('visible');
+  document.getElementById('search-results').innerHTML = '';
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  const re = new RegExp(`(${escapeRegex(query)})`, 'gi');
+  return text.replace(re, '<mark>$1</mark>');
+}
+
+function stripHtml(html) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function doSearch(q) {
+  const container = document.getElementById('search-results');
+  q = q.trim();
+  if (q.length < 2) {
+    container.innerHTML = q.length === 0
+      ? '<div class="empty"><div class="empty-icon">🔍</div><p>Arama yapmak için yazmaya başlayın</p></div>'
+      : '';
+    return;
+  }
+
+  const lower = q.toLowerCase();
+  const results = TOPICS.filter(t => {
+    const searchable = (t.title + ' ' + t.tags + ' ' + stripHtml(t.content)).toLowerCase();
+    return searchable.includes(lower);
+  });
+
+  if (results.length === 0) {
+    container.innerHTML = `<div class="no-results">Sonuç bulunamadı: "<strong>${q}</strong>"</div>`;
+    return;
+  }
+
+  container.innerHTML = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px;">${results.length} sonuç bulundu</div>` +
+    results.map(t => {
+      const hl = (text) => highlight(text, q);
+      return renderCard(t, {suffix:'search', forceOpen:true, highlightFn:(content) => highlight(content, q)});
+    }).join('');
+
+  // Also highlight titles
+  container.querySelectorAll('.card-title').forEach(el => {
+    el.innerHTML = highlight(el.textContent, q);
+  });
+}
+
+// ============================================================
+// SAVED PAGE
+// ============================================================
+function renderSaved() {
+  const container = document.getElementById('saved-list');
+  const saved = TOPICS.filter(t => state.bookmarks.has(t.id));
+  if (saved.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">⭐</div><p>Henüz kaydettiğiniz konu yok.<br>Konu kartlarında ⭐ Kaydet butonuna basın.</p></div>';
+    return;
+  }
+  container.innerHTML = saved.map(t => renderCard(t, {suffix:'saved'})).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  initHomePage();
+  initTopicsPage();
+  initDosesPage();
+  initSearchPage();
+  updateStats();
+});
+</script>
+</body>
+</html>
